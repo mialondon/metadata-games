@@ -62,13 +62,25 @@ function tag_form($object_id) {
   <fieldset>
   <legend>Add words to describe this object</legend>
   <label for="tags">Tags</label>
-  <input type="text" name="tags" size="100" maxlength="300" value="" />  <input class="button" name="submitTags" type="submit" value="Tag!" />
-  <p class="hint">Separate each tag with a comma, like this: tag, label, words to describe things, name.</p>
+  <input type="text" name="tags" class="tags" size="100" maxlength="300" value="" /><p class="submit"><input class="button" name="submitTags" type="submit" value="Tag!" /></p>
+  <p class="hint">Tip: ∂separate each tag with a comma, like this: tag, label, words to describe things, name.</p>
   </fieldset>
   </form>
 <?php  
 }
 
+/**
+ * Save turn.  Pass turn ID onto function to save UCG.
+ */
+
+
+/**
+ * Save tags. Updating to save tags to mmg_turn_tags rather than mmg_turn.
+ * 
+ * @since 0.1
+ * @uses $wpdb
+ * 
+ */
 function save_tags() {
     // do stuff
   global $wpdb;
@@ -81,9 +93,9 @@ function save_tags() {
 // didn't like $wpdb->wp_mmg_turns
   $wpdb->query( $wpdb->prepare( "
   INSERT INTO wp_mmg_turns 
-  ( turn_id, object_id, tags )
-  VALUES ( %d, %d, %s )" ,
-  array( 1, $object_id, $tags ) ) ); // turn ID is hardcoded for now, shame
+  (object_id, tags )
+  VALUES ( %d, %s )" ,
+  array( $object_id, $tags ) ) ); // turn ID is hardcoded for now, shame
 
 
 // $query = "INSERT INTO wp_mmg_turns (object_id, tags) VALUES ('$object_id','$tags')";
@@ -103,8 +115,9 @@ function save_tags() {
 }
 
 function print_refresh() {
-  // assume that people will need javascript to use the site generally?
+  // assume that people will need javascript to use the site generally so ok to rely on js?
   // onclick or onselect or something?
+  // ### needs updating as reload() resubmits instead of loading afresh (der)
 ?>
 <form>
 <input type="button" class="button" value="get a different object" onclick="location.reload()">

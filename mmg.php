@@ -185,6 +185,6 @@ function gameShortCode($atts, $content=null) {
 }
 
 // Add the shortcode
-add_shortcode('game', 'gameShortCode');
+add_shortcode('mmgame', 'gameShortCode');
 
 ?>
