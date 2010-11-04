@@ -164,23 +164,24 @@ function mmg_setting_game_length() {
 }
 
 /////////// set up shortcode
-// Sample: [game gametype=simpletagging]
+// Sample: [mmgame gametype=simpletagging]
 function gameShortCode($atts, $content=null) {
   // do stuff, probably by calling other functions depending on what params are added
   // explode attributes array
+  
+  if(@is_file(ABSPATH.'/wp-content/plugins/mmg/mmg_functions.php')) {
+      include_once(ABSPATH.'/wp-content/plugins/mmg/mmg_functions.php'); 
+  }
+  
   extract(shortcode_atts(array(
   "gametype" => 'simpletagging' // default
   ), $atts));
-  if ($gametype == 'mmg') {
-    // call that game
-    echo "getting mmg...";
+  if ($gametype == 'simplefacts') {
+    simpleFacts();
   } else {
     // simple tag game as default
-    if(@is_file(ABSPATH.'/wp-content/plugins/mmg/mmg_functions.php')) {
-      include_once(ABSPATH.'/wp-content/plugins/mmg/mmg_functions.php');
-      // call simpletagging
+       // call simpletagging
       simpleTagging();
-    }
   }
 }
 

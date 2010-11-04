@@ -11,13 +11,18 @@
 Copyright (C) 2010 Mia Ridge
 */
 
-// needs a good refactor as any shared functionality for general screens is moved out, etc
+/**
+ * Sets up some stuff and prints the form for the 'add tags' activity
+ * needs a good refactor as any shared functionality for general screens is moved out, etc
+ * @since 0.1
+ * 
+ */
 function simpleTagging() {
   // deal with submitted data, if any
   if($_POST['submitTags'] == "Tag!") {
   //if (isset($_POST['submitTags'])) {
     // do stuff
-  save_tags();
+  save_turn('simpletagging');
   } else {
     //echo "not submitted.";
   }
@@ -52,8 +57,55 @@ function simpleTagging() {
   
 }
 
+/**
+ * Sets up some stuff and calls the form for the 'add a fact' activity
+ * @since 0.1
+ * 
+ */
+function simpleFacts() {
+  // deal with submitted data, if any
+  if($_POST['submitTags'] == "Add your fact") {
+  //if (isset($_POST['submitTags'])) {
+    // do stuff
+  save_turn('simplefacts');
+  } else {
+    //echo "not submitted.";
+  }
+    
+  
+  // get an object to display and write it to the screen
+  $turn_object = mmg_get_object();
+  
+  if(is_object($turn_object)) {
+    
+    echo '<div class="something">';
+    echo '<h2 class="objectname">'.urldecode($turn_object->name).'</h2>';
+    echo '<p class="tombstone">'.urldecode($turn_object->interpretative_date).', '.urldecode($turn_object->interpretative_place).' (Accession num: '.urldecode($turn_object->accession_number).')</p>';
+    
+    echo '<img src="'. urldecode($turn_object->image_url).'" />';
+    
+    // call the form, give it the object_id for hidden field
+    fact_form($turn_object->object_id);
+    
+    // get a new object
+    echo "Skip it?";
+    print_refresh();    
+    
+    echo '</div>'; 
+    
+  } else {
+    echo "Whoops, that didn't work - try refreshing the page.";
+    print_refresh();
+  }  
+  
+}
+
+/**
+ * Prints the form for the 'add tags' activity
+ * @since 0.1
+ * 
+ */
 function tag_form($object_id) {
-  // ok, let's go.
 ?>
   <form action="" method="post">
 
@@ -62,17 +114,81 @@ function tag_form($object_id) {
   <fieldset>
   <legend>Add words to describe this object</legend>
   <label for="tags">Tags</label>
-  <input type="text" name="tags" class="tags" size="100" maxlength="300" value="" /><p class="submit"><input class="button" name="submitTags" type="submit" value="Tag!" /></p>
-  <p class="hint">Tip: ∂separate each tag with a comma, like this: tag, label, words to describe things, name.</p>
+  <input type="text" name="tags" class="tags" size="80" maxlength="300" value="" />
+  <p class="submit"><input class="button" name="submitTags" type="submit" value="Tag!" /></p>
+  <p class="hint">Tip: separate each tag with a comma, like this: tag, label, words to describe things, name.</p>
   </fieldset>
   </form>
 <?php  
 }
 
 /**
- * Save turn.  Pass turn ID onto function to save UCG.
+ * Prints the form for the 'add a fact' activity
+ * @since 0.1
+ * 
  */
+function fact_form($object_id) {
+?>
+  <form action="" method="post">
+  <input type="hidden" value="<?php echo $object_id ?>" name="object_id" />
+  <fieldset>
+  <legend>Add a fact about this object</legend>
+  <label for="fact_headline">Headline</label><br />
+  <input type="text" name="fact_headline" class="fact" size="80" maxlength="100" value="" /><br />
+  <label for="fact_summary">Fact summary</label>
+  <textarea name="fact_summary" cols="40" rows="5">
+Find an interesting fact to share about this object.
+</textarea>
+  <label for="fact_source">Source</label>
+  <input type="text" name="fact_source" class="fact" size="100" maxlength="300" value="" />
+  <p class="submit"><input class="button" name="submitTags" type="submit" value="Add your fact" /></p>
+  <p class="hint">The headline should 'sell' your fact. The source should provide evidence for your fact.</p>
+  </fieldset>
+  </form>
+<?php  
+}
 
+
+/**
+ * Saves their turn.  Pass turn ID onto function to save UCG.
+ * @since 0.1
+ * @uses $wpdb
+ * 
+ * This also uses the session manager plugin's cookie to get a session ID, which is effectively a temporary user ID
+ * 
+ */
+function save_turn($game_code) {
+  // ### check that $game_code isn't null
+
+  global $wpdb; // would already be global, presumably?
+ 
+  // prepare data
+  $object_id = $wpdb->escape($_POST['object_id'] );
+  //$ip=@$REMOTE_ADDR; // if globals, otherwise...
+  // game code, game version
+  $session_id = ($_COOKIE['PHPSESSID']); 
+  $ip_address = $_SERVER['REMOTE_ADDR'];
+  
+  // WordPress username $wp_username, if they have one an
+  
+  $wpdb->query( $wpdb->prepare( "
+  INSERT INTO wp_mmg_turns 
+  (object_id, game_code, session_id, ip_address )
+  VALUES ( %d, %s, %s, %s )" ,
+  array( $object_id, $game_code, $session_id, $ip_address ) ) ); 
+  $turn_id = mysql_insert_id();
+  
+  // call the appropriate save_$ugc functions with turn_id
+  switch ($game_code) {
+   case "simpletagging":
+     save_tags($turn_id); 
+     break;  
+   case "simplefacts":
+     save_fact($turn_id); 
+     break;    
+  }
+
+}
 
 /**
  * Save tags. Updating to save tags to mmg_turn_tags rather than mmg_turn.
@@ -81,7 +197,7 @@ function tag_form($object_id) {
  * @uses $wpdb
  * 
  */
-function save_tags() {
+function save_tags($turn_id) {
     // do stuff
   global $wpdb;
 //  global $my_plugin_table; // ### should set this up
@@ -90,28 +206,51 @@ function save_tags() {
   $object_id = $wpdb->escape($_POST['object_id'] );
   echo "You added tags: ".$_POST['tags'];
 
-// didn't like $wpdb->wp_mmg_turns
-  $wpdb->query( $wpdb->prepare( "
-  INSERT INTO wp_mmg_turns 
-  (object_id, tags )
-  VALUES ( %d, %s )" ,
-  array( $object_id, $tags ) ) ); // turn ID is hardcoded for now, shame
-
-
-// $query = "INSERT INTO wp_mmg_turns (object_id, tags) VALUES ('$object_id','$tags')";
-// $wpdb->query( $query );
- 
- // $wpdb->insert($wpdb->wp_mmg_turns, array ('object_id' => $object_id, 'tags' => $tags) );
-// start here tomorrow ###
-
-/*
-  $user_text =  $wpdb->escape( $_POST['user_text'] );
-  $query = "INSERT INTO $my_plugin_table (user_text) VALUES ('$user_text')";
-  $wpdb->query( $query );
-  echo 'success';
-} */
-
+  // for each comma-separated tag, add a row to the tags table
+  
+  $tag_array = explode(",",$tags);
+  $count=count($tag_array);
+  
+  for($i=0;$i<$count;$i++)
+  
+  {
+  // echo $tag_array[$i];
+  
+    $wpdb->query( $wpdb->prepare( "
+    INSERT INTO wp_mmg_turn_tags 
+    (turn_id, object_id, tag )
+    VALUES ( %d, %d, %s )" ,
+    array( $turn_id, $object_id, $tag_array[$i] ) ) ); 
+  
+  }
     
+}
+
+/**
+ * Save tags. Updating to save tags to mmg_turn_tags rather than mmg_turn.
+ * 
+ * @since 0.1
+ * @uses $wpdb
+ * 
+ */
+function save_fact($turn_id) {
+    // do stuff
+  global $wpdb;
+//  global $my_plugin_table; // ### should set this up
+    
+  $tags = $wpdb->escape($_POST['tags'] );
+  $object_id = $wpdb->escape($_POST['object_id'] );
+  $fact_headline = $wpdb->escape($_POST['fact_headline'] );
+  $fact_summary = $wpdb->escape($_POST['fact_summary'] );
+  $fact_source = $wpdb->escape($_POST['fact_source'] ); 
+  echo "You added fact: ".$_POST['fact_summary'];
+  
+    $wpdb->query( $wpdb->prepare( "
+    INSERT INTO wp_mmg_turn_facts 
+    (turn_id, object_id, fact_headline, fact_summary, fact_source )
+    VALUES ( %d, %d, %s, %s, %s )" ,
+    array( $turn_id, $object_id, $fact_headline, $fact_summary, $fact_source ) ) ); 
+     
 }
 
 function print_refresh() {
