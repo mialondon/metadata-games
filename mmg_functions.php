@@ -36,7 +36,15 @@ function simpleTagging() {
     echo '<div class="something">';
     // print_r($turn_object);
     // print object name
-    echo '<h2 class="objectname">'.urldecode($turn_object->name).'</h2>';
+    $object_name = urldecode($turn_object->name); 
+    if ($object_name != 'None') {   
+       echo '<h2 class="objectname">'.urldecode($turn_object->name).'</h2>';
+    } else {
+      // use the description instead  ### add test for Powerhouse objects as their descriptions are short
+      echo '<h2 class="objectname">'.urldecode($turn_object->description).'</h2>';
+    }
+    
+    // ### add test for date and place not being null and add commas appropriately
     echo '<p class="tombstone">'.urldecode($turn_object->interpretative_date).', '.urldecode($turn_object->interpretative_place).' (Accession num: '.urldecode($turn_object->accession_number).')</p>';
     
     echo '<img src="'. urldecode($turn_object->image_url).'" />';
