@@ -17,6 +17,22 @@ Copyright (C) 2010 Mia Ridge
  * @since 0.1
  * 
  */
+ 
+function checkForParams() {
+  global $wp_query;
+  if (isset($wp_query->query_vars['obj_ID'])) {
+    // sanitise the input ###
+   // echo "yes";
+    $obj_id = $wp_query->query_vars['obj_ID'];
+    return $obj_id;
+  } else {
+    // return nothing ###
+  }
+  
+  // also maybe gamecode (unless it's taken from the page slug etc)
+} 
+ 
+ 
 function simpleTagging() {
   // deal with submitted data, if any
   if($_POST['submitTags'] == "Tag!") {
@@ -29,12 +45,20 @@ function simpleTagging() {
     
   
   // get an object to display and write it to the screen
-  $turn_object = mmg_get_object();
+  // if a particular object is requested via URL param, get that one
+  // otherwise get a random object
+  $temp_object_id = checkForParams();
+  
+  if (!empty($temp_object_id)) { // get specific object 
+    $turn_object = mmg_get_object($temp_object_id);
+  } else { // get random object
+    $turn_object = mmg_get_object();
+  }
   
   if(is_object($turn_object)) {
     $institution = urldecode($turn_object->institution);
     $source_display_url = urldecode($turn_object->source_display_url);
-    
+    $image_url = urldecode($turn_object->image_url);
     
     echo '<div class="something">';
     // print_r($turn_object);
@@ -56,10 +80,21 @@ function simpleTagging() {
     
     echo '<p class="tombstone">'.urldecode($turn_object->interpretative_date).', '.urldecode($turn_object->interpretative_place).' (Accession num: '.urldecode($turn_object->accession_number).')</p>';
     
-    echo '<img src="'. urldecode($turn_object->image_url).'" />';
+    // Powerhouse objects have auto-cropped images that end up being a bit too mysterious for gameplay
+    // so um, sneakily update the URL to get an uncropped version of the image
+    if ($institution == 'Powerhouse Museum') {
+      $image_url = str_replace("/thumbs/", "/TLF_mediums/", $image_url);
+    } 
+    echo '<img class="object_image" src="'. $image_url .'" />';  
     
     // call the form, give it the object_id for hidden field
     tag_form($turn_object->object_id);
+    
+    
+    // print page URL so people can come back later (tidy placement on page later ###)  
+  //  if(!empty(curPageURL())) {
+     echo curPageURL(); /// ### this isn't quite right, it hadn't add the actual object id, just whatever's been passed to the page already
+ //   }
     
     // get a new object
     echo "Skip it?";
@@ -91,7 +126,8 @@ function simpleFacts() {
     
   
   // get an object to display and write it to the screen
-  $turn_object = mmg_get_object();
+  // apply same test for object id as above ###
+  $turn_object = mmg_get_object(); 
   
   if(is_object($turn_object)) {
     
@@ -99,7 +135,7 @@ function simpleFacts() {
     echo '<h2 class="objectname">'.urldecode($turn_object->name).'</h2>';
     echo '<p class="tombstone">'.urldecode($turn_object->interpretative_date).', '.urldecode($turn_object->interpretative_place).' (Accession num: '.urldecode($turn_object->accession_number).')</p>';
     
-    echo '<img src="'. urldecode($turn_object->image_url).'" />';
+    echo '<img class="object_image" src="'. urldecode($turn_object->image_url).'" />';
     
     // call the form, give it the object_id for hidden field
     fact_form($turn_object->object_id);
@@ -111,7 +147,7 @@ function simpleFacts() {
     echo '</div>'; 
     
   } else {
-    echo "Whoops, that didn't work - try refreshing the page.";
+    echo "Whoops, I'm not sure I can find that object. Try refreshing the page."; // different messages for specific obj sought but not found?
     print_refresh();
   }  
   
@@ -244,7 +280,7 @@ function save_tags($turn_id) {
 }
 
 /**
- * Save tags. Updating to save tags to mmg_turn_tags rather than mmg_turn.
+ * Save facts.
  * 
  * @since 0.1
  * @uses $wpdb
@@ -272,11 +308,9 @@ function save_fact($turn_id) {
 
 function print_refresh() {
   // assume that people will need javascript to use the site generally so ok to rely on js?
-  // onclick or onselect or something?
-  // ### needs updating as reload() resubmits instead of loading afresh (der)
 ?>
 <form>
-<input type="button" class="button" value="get a different object" onclick="location.reload()">
+<input type="button" class="button" value="get a different object" onclick="location.replace(document.URL)">
 </form>
 <?php  
 }
@@ -294,8 +328,17 @@ function print_refresh() {
 global $wpdb;
 
 // get and display random object
-function mmg_get_object() {
-  $row = random_row('wp_mmg_objects', 'object_id');
+function mmg_get_object($obj_id = null) {
+  
+  global $wpdb;
+  
+  if(!empty($obj_id)) {
+    echo $obj_id;
+    $row = $wpdb->get_row ($wpdb->prepare ("SELECT * FROM wp_mmg_objects WHERE object_id = $obj_id LIMIT 1"));
+  } else {
+    $row = random_row('wp_mmg_objects', 'object_id'); // change to table prefix stuff
+  }
+
   if(is_object($row)) {
   
   /* session-based tests to check that the visitor hasn't seen 
@@ -315,10 +358,15 @@ function mmg_get_object() {
   global $wpdb;
   
   // get a random ID
-  $random_row = $wpdb->get_row ($wpdb->prepare ("SELECT $column FROM $table AS r1 
+  /* 
+   * this method doesn't seem to be that random, Galileo's telescope is coming back an awful lot
+$random_row = $wpdb->get_row ($wpdb->prepare ("SELECT $column FROM $table AS r1 
   JOIN (SELECT ROUND( RAND( ) * ( SELECT MAX( object_id ) FROM $table) ) AS id) AS r2
   WHERE r1.object_id >= r2.id ORDER BY r1.object_id ASC LIMIT 1"));
+   */
   
+  $random_row = $wpdb->get_row ($wpdb->prepare ("SELECT $column FROM $table ORDER BY RAND(NOW()) LIMIT 1"));
+   
   $random_row_id = $random_row->object_id;
   
   // get the full record for that ID
@@ -328,4 +376,20 @@ function mmg_get_object() {
 
   }
 
+/*
+ * get the page url (hopefully with params) to print for people to come back later
+ * From http://www.webcheatsheet.com/php/get_current_page_url.php
+ * Use e.g. echo curPageURL();
+ */
+function curPageURL() {
+ $pageURL = 'http';
+ if ($_SERVER["HTTPS"] == "on") {$pageURL .= "s";}
+ $pageURL .= "://";
+ if ($_SERVER["SERVER_PORT"] != "80") {
+  $pageURL .= $_SERVER["SERVER_NAME"].":".$_SERVER["SERVER_PORT"].$_SERVER["REQUEST_URI"];
+ } else {
+  $pageURL .= $_SERVER["SERVER_NAME"].$_SERVER["REQUEST_URI"];
+ }
+ return $pageURL;
+}
 ?>

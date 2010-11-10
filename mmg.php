@@ -33,14 +33,14 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 register_activation_hook(__FILE__,'mmg_install');
 
 function mmg_install() {
-	// do stuff when installed
-	global $wp_version;
-	if (version_compare($wp_version, "3", "<")) {
-		deactivate_plugins(basename(__FILE__)); // deactivate plugin
-		wp_die("This plugin requires WordPress Version 3 or higher.");	
-	} else {
-	  // go ahead and set up the custom tables needed
-	  /* to do
+  // do stuff when installed
+  global $wp_version;
+  if (version_compare($wp_version, "3", "<")) {
+    deactivate_plugins(basename(__FILE__)); // deactivate plugin
+    wp_die("This plugin requires WordPress Version 3 or higher.");  
+  } else {
+    // go ahead and set up the custom tables needed
+    /* to do
      * http://abhirama.wordpress.com/2010/06/07/wordpress-plugin-and-widget-tutorial/
      * has a good setup script, at first glance
 
@@ -78,24 +78,24 @@ $my_plugin_version = '1.0';
 register_deactivation_hook(__FILE__,'mmg_uninstall');
 
 function mmg_uninstall() {
-	// do stuff
-	// maybe call export thingy too?	
-	// presumably delete settings from db?
+  // do stuff
+  // maybe call export thingy too?  
+  // presumably delete settings from db?
 }
 
 
 function mmg_export_data() {
-	// let users export data generated through game play for use on collections etc
-	// is this the same as backing up data?
+  // let users export data generated through game play for use on collections etc
+  // is this the same as backing up data?
 }
 
 /////////// set up option storing stuff
 //setting it up now for use later
 // create array of options
 $mmg_options_arr=array(
-	"mmg_option_game_length"=>'60', // default value of countdown timer
-	//"mmg_option_2"=>'Some other value',
-	);
+  "mmg_option_game_length"=>'60', // default value of countdown timer
+  //"mmg_option_2"=>'Some other value',
+  );
 
 // store them
 update_option('mmg_plugin_options',$mmg_options_arr); 
@@ -125,8 +125,8 @@ add_options_page('MMG settings page', 'MMG settings', 'administrator', __FILE__,
 add_action('admin_init', 'mmg_register_settings');
 
 function mmg_register_settings() {
-	// register settings - array, not individual
-	register_setting('mmg-settings-group', 'mmg_settings_values');
+  // register settings - array, not individual
+  register_setting('mmg-settings-group', 'mmg_settings_values');
   // old way of registering a single field
   // register_setting('mmg-settings-group', 'mmg_option_game_length');
 }
@@ -180,12 +180,26 @@ function gameShortCode($atts, $content=null) {
     simpleFacts();
   } else {
     // simple tag game as default
-       // call simpletagging
-      simpleTagging();
+    simpleTagging();
   }
 }
 
 // Add the shortcode
 add_shortcode('mmgame', 'gameShortCode');
+
+/* adding a filter for object ID and gamecode so players can return via a link */
+function parameter_objID($oVars) {
+    $oVars[] = "obj_ID";    // represents the name of the product category as shown in the URL
+    return $oVars;
+}
+
+// hook add_query_vars function into query_vars
+add_filter('query_vars', 'parameter_objID');
+
+function parameter_gamecode($gVars) {
+    $gVars[] = "gamecode";    // represents the name of the product category as shown in the URL
+    return $gVars;
+}
+add_filter('query_vars', 'parameter_gamecode');
 
 ?>
