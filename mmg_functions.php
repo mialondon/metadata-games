@@ -90,23 +90,37 @@ function simpleTagging() {
     // call the form, give it the object_id for hidden field
     tag_form($turn_object->object_id);
     
-    
+    /* start block - this will be a new function */
+    echo "<p>Want to think about it and come back to this object later?  Save this URL: ";
+    if (!empty($temp_object_id)) { // if the page had loaded a requested object successfully, print that URL
+      echo '<a href="'.curPageURL().'">'.curPageURL().'</a>'; // since this includes the params we only want this if the query is known to be successful
+    } else { // get random object
+      $permalink = get_permalink( $id ); 
+      $pageURL = $permalink.'?obj_ID='.$turn_object->object_id;
+
+      echo '<a href="'.$pageURL.'">'.$pageURL.'</a>'; // 
+    }
+    echo "</p>";
+  
     // print page URL so people can come back later (tidy placement on page later ###)  
   //  if(!empty(curPageURL())) {
-     echo curPageURL(); /// ### this isn't quite right, it hadn't add the actual object id, just whatever's been passed to the page already
+     //echo curPageURL(); /// ### this isn't quite right, it hadn't add the actual object id, just whatever's been passed to the page already
  //   }
     
+
     // get a new object
-    echo "Skip it?";
-    print_refresh();    
+    echo "<p>Not sure what to do with this object?  You can skip it... ";
+    print_refresh();
+    echo "</p>";
     
     echo '</div>'; 
     
   } else {
-    echo "Whoops, that didn't work - try refreshing the page.";
+    echo "<p>Whoops, that didn't work.  We can't find the object you're looking for - try refreshing the page. "; // different messages for specific obj sought but not found?
     print_refresh();
+    echo "</p>";
   }  
-  
+
 }
 
 /**
@@ -117,13 +131,9 @@ function simpleTagging() {
 function simpleFacts() {
   // deal with submitted data, if any
   if($_POST['submitTags'] == "Add your fact") {
-  //if (isset($_POST['submitTags'])) {
     // do stuff
   save_turn('simplefacts');
-  } else {
-    //echo "not submitted.";
-  }
-    
+  } 
   
   // get an object to display and write it to the screen
   // apply same test for object id as above ###
@@ -141,14 +151,16 @@ function simpleFacts() {
     fact_form($turn_object->object_id);
     
     // get a new object
-    echo "Skip it?";
-    print_refresh();    
+    echo "<p>Not sure what to do with this object?  You can skip it...";
+    print_refresh();
+    echo "</p>";
     
     echo '</div>'; 
     
   } else {
-    echo "Whoops, I'm not sure I can find that object. Try refreshing the page."; // different messages for specific obj sought but not found?
+    echo "<p>Whoops, I'm not sure I can find that object. Try refreshing the page."; // different messages for specific obj sought but not found?
     print_refresh();
+    echo "</p>";
   }  
   
 }
@@ -307,12 +319,14 @@ function save_fact($turn_id) {
 }
 
 function print_refresh() {
-  // assume that people will need javascript to use the site generally so ok to rely on js?
-?>
+
+$permalink = get_permalink( $id );
+echo '<a href="'.$permalink.'">Pick me to get a new object.</a>';
+/*?>
 <form>
 <input type="button" class="button" value="get a different object" onclick="location.replace(document.URL)">
 </form>
-<?php  
+<?php */
 }
 
 
@@ -333,7 +347,7 @@ function mmg_get_object($obj_id = null) {
   global $wpdb;
   
   if(!empty($obj_id)) {
-    echo $obj_id;
+    //echo $obj_id;
     $row = $wpdb->get_row ($wpdb->prepare ("SELECT * FROM wp_mmg_objects WHERE object_id = $obj_id LIMIT 1"));
   } else {
     $row = random_row('wp_mmg_objects', 'object_id'); // change to table prefix stuff
@@ -346,6 +360,9 @@ function mmg_get_object($obj_id = null) {
    * get another row if they have
    */
    
+  } else {
+    $row = ''; // for some reason a row wasn't fetched
+    //echo 'sucks to be you, dude';
   }
   
   return $row;
