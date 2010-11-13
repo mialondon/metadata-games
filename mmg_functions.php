@@ -11,8 +11,12 @@
 Copyright (C) 2010 Mia Ridge
 */
 
-// ssh, don't tell anyone. ### Add as plugin config setting
-define("table_prefix", "wp_mmg_");
+// ### Add as plugin config setting so it's generalisable. Also db name, not just table names
+if ($_SERVER['HTTP_HOST'] == 'localhost' || $_SERVER['HTTP_HOST'] == 'www.museumgames.org.uk') {
+  define("table_prefix", "wp_mmg_");
+} elseif ($_SERVER['HTTP_HOST'] == 'www.museumgam.es')  {
+  define("table_prefix", "wplive_mmg_");
+}
 
 // include the game-specific files
 require_once(dirname(__FILE__) . "/includes/mmg_simpletagging.php");
