@@ -178,6 +178,8 @@ function gameShortCode($atts, $content=null) {
   ), $atts));
   if ($gametype == 'simplefacts') {
     simpleFacts();
+  } elseif ($gametype == 'funtagging') {
+    funTagging();
   } else {
     // simple tag game as default
     simpleTagging();

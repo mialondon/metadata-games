@@ -21,6 +21,7 @@ if ($_SERVER['HTTP_HOST'] == 'localhost' || $_SERVER['HTTP_HOST'] == 'www.museum
 // include the game-specific files
 require_once(dirname(__FILE__) . "/includes/mmg_simpletagging.php");
 require_once(dirname(__FILE__) . "/includes/mmg_simplefact.php");
+require_once(dirname(__FILE__) . "/includes/mmg_funtagging.php");
 require_once(dirname(__FILE__) . "/includes/mmg_reports.php");
 
 /**
@@ -231,6 +232,9 @@ function saveTurn($game_code) {
      break;  
    case "simplefacts":
      saveFact($turn_id); 
+     break; 
+   case "funTagging": // case matters, you idiot
+     saveTagsWithScores($turn_id); 
      break;    
   }
 
@@ -297,6 +301,34 @@ function saveFact($turn_id) {
     VALUES ( %d, %d, %s, %s, %s )" ,
     array( $turn_id, $object_id, $fact_headline, $fact_summary, $fact_source ) ) ); 
      
+}
+
+function saveTagsWithScores($turn_id) { 
+    // do stuff
+  global $wpdb;
+//  global $my_plugin_table; // ### should set this up
+    
+  $tags = $wpdb->prepare($_POST['tags'] );
+  $object_id = $wpdb->prepare($_POST['object_id'] );
+  echo "You added tags: ".$_POST['tags'];
+
+  // for each comma-separated tag, add a row to the tags table
+  $tag_array = explode(",",$tags);
+  $count=count($tag_array);
+  
+  for($i=0;$i<$count;$i++)
+  {
+    $wpdb->query( $wpdb->prepare( "
+    INSERT INTO wp_mmg_turn_tags 
+    (turn_id, object_id, tag )
+    VALUES ( %d, %d, %s )" ,
+    array( $turn_id, $object_id, $tag_array[$i] ) ) ); 
+  }
+  
+  // add points to the users' account (if they have one. If they don't, scores are saved in and calculated from
+  // turns table. I can bulk add their scores when they join)
+  // not sure about relying so directly on someone else's plugin, maybe move this into a separate file and keep the local points option? ###
+  cp_alterPoints( cp_currentUser(), 10);
 }
 
 ?>

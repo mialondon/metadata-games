@@ -23,7 +23,7 @@
 function simpleFacts() {
   // deal with submitted data, if any
   if($_POST['submitTags'] == "Add your fact") {
-  saveTurn('simplefacts');
+    saveTurn('simplefacts');
   } 
   
   echo '<div class="simpleFacts">'; // put a background wash on here? ###
