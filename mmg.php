@@ -173,13 +173,15 @@ function gameShortCode($atts, $content=null) {
       include_once(ABSPATH.'/wp-content/plugins/mmg/mmg_functions.php'); 
   }
   
-  extract(shortcode_atts(array(
+  extract(shortcode_atts(array( // lowercase cos the short tags are, elsewhere camel.
   "gametype" => 'simpletagging' // default
   ), $atts));
   if ($gametype == 'simplefacts') {
     simpleFacts();
   } elseif ($gametype == 'funtagging') {
     funTagging();
+  } elseif ($gametype == 'factseeker') {
+    factSeeker(); 
   } else {
     // simple tag game as default
     simpleTagging();

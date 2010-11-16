@@ -22,6 +22,7 @@ if ($_SERVER['HTTP_HOST'] == 'localhost' || $_SERVER['HTTP_HOST'] == 'www.museum
 require_once(dirname(__FILE__) . "/includes/mmg_simpletagging.php");
 require_once(dirname(__FILE__) . "/includes/mmg_simplefact.php");
 require_once(dirname(__FILE__) . "/includes/mmg_funtagging.php");
+require_once(dirname(__FILE__) . "/includes/mmg_factseeker.php");
 require_once(dirname(__FILE__) . "/includes/mmg_reports.php");
 
 /**
@@ -158,9 +159,9 @@ function mmgGetObject($obj_id = null) {
   
   if(!empty($obj_id)) {
     //echo $obj_id;
-    $row = $wpdb->get_row ($wpdb->prepare ("SELECT * FROM'. table_prefix.'objects WHERE object_id = $obj_id LIMIT 1"));
+    $row = $wpdb->get_row ($wpdb->prepare ("SELECT * FROM ". table_prefix."objects WHERE object_id = $obj_id LIMIT 1"));
   } else {
-    $row = randomRow('wp_mmg_objects', 'object_id'); // change to table prefix stuff
+    $row = randomRow(table_prefix.'objects', 'object_id'); // change to table prefix stuff
   }
 
   if(is_object($row)) {
@@ -219,7 +220,7 @@ function saveTurn($game_code) {
   // WordPress username $wp_username, if they have one an
   
   $wpdb->query( $wpdb->prepare( "
-  INSERT INTO wp_mmg_turns 
+  INSERT INTO ". table_prefix."turns 
   (object_id, game_code, session_id, ip_address )
   VALUES ( %d, %s, %s, %s )" ,
   array( $object_id, $game_code, $session_id, $ip_address ) ) ); 
@@ -233,9 +234,12 @@ function saveTurn($game_code) {
    case "simplefacts":
      saveFact($turn_id); 
      break; 
-   case "funTagging": // case matters, you idiot
+   case "funTagging": 
      saveTagsWithScores($turn_id); 
-     break;    
+     break;   
+   case "factSeeker":
+     saveFactWithScores($turn_id); 
+     break;  
   }
 
 }
@@ -254,7 +258,7 @@ function saveTags($turn_id) {
     
   $tags = $wpdb->prepare($_POST['tags'] );
   $object_id = $wpdb->prepare($_POST['object_id'] );
-  echo "You added tags: ".$_POST['tags'];
+  echo '<p class="turn_results">You added tags: '.$_POST['tags'].'</p>';
 
   // for each comma-separated tag, add a row to the tags table
   
@@ -267,7 +271,7 @@ function saveTags($turn_id) {
   // echo $tag_array[$i];
   
     $wpdb->query( $wpdb->prepare( "
-    INSERT INTO wp_mmg_turn_tags 
+    INSERT INTO ". table_prefix."turn_tags 
     (turn_id, object_id, tag )
     VALUES ( %d, %d, %s )" ,
     array( $turn_id, $object_id, $tag_array[$i] ) ) ); 
@@ -293,13 +297,45 @@ function saveFact($turn_id) {
   $fact_headline = $wpdb->prepare($_POST['fact_headline'] );
   $fact_summary = $wpdb->prepare($_POST['fact_summary'] );
   $fact_source = $wpdb->prepare($_POST['fact_source'] ); 
-  echo "You added fact: ".$_POST['fact_summary'];
+  
+  echo '<p class="turn_results">You added fact: '.$_POST['fact_summary'].'</p>';
   
     $wpdb->query( $wpdb->prepare( "
-    INSERT INTO wp_mmg_turn_facts 
+    INSERT INTO ". table_prefix."turn_facts 
     (turn_id, object_id, fact_headline, fact_summary, fact_source )
     VALUES ( %d, %d, %s, %s, %s )" ,
     array( $turn_id, $object_id, $fact_headline, $fact_summary, $fact_source ) ) ); 
+     
+}
+
+/**
+ * Save facts and adds to player score.
+ * 
+ * @since 0.3
+ * @uses $wpdb
+ * Also uses CubePoints plugin
+ * 
+ */
+function saveFactWithScores($turn_id) {
+    // do stuff
+  global $wpdb;
+    
+  $tags = $wpdb->prepare($_POST['tags'] );
+  $object_id = $wpdb->prepare($_POST['object_id'] );
+  $fact_headline = $wpdb->prepare($_POST['fact_headline'] );
+  $fact_summary = $wpdb->prepare($_POST['fact_summary'] );
+  $fact_source = $wpdb->prepare($_POST['fact_source'] ); 
+  
+  echo '<p class="turn_results">You added fact: '.$_POST['fact_summary'] .' and you scored points!</p>';
+  
+    $wpdb->query( $wpdb->prepare( "
+    INSERT INTO ". table_prefix."turn_facts 
+    (turn_id, object_id, fact_headline, fact_summary, fact_source )
+    VALUES ( %d, %d, %s, %s, %s )" ,
+    array( $turn_id, $object_id, $fact_headline, $fact_summary, $fact_source ) ) ); 
+    
+    cp_alterPoints( cp_currentUser(), 150); // 150 points per fact for now ### make a $var
+    // what if there's no user?  Add points to turn?
      
 }
 
@@ -310,7 +346,7 @@ function saveTagsWithScores($turn_id) {
     
   $tags = $wpdb->prepare($_POST['tags'] );
   $object_id = $wpdb->prepare($_POST['object_id'] );
-  echo "You added tags: ".$_POST['tags'];
+  echo '<p class="turn_results">You added tags: '.$_POST['tags']. ' and you scored 10 points. Hooray!</p>'; // make a $variable ###
 
   // for each comma-separated tag, add a row to the tags table
   $tag_array = explode(",",$tags);
@@ -319,7 +355,7 @@ function saveTagsWithScores($turn_id) {
   for($i=0;$i<$count;$i++)
   {
     $wpdb->query( $wpdb->prepare( "
-    INSERT INTO wp_mmg_turn_tags 
+    INSERT INTO ". table_prefix."turn_tags 
     (turn_id, object_id, tag )
     VALUES ( %d, %d, %s )" ,
     array( $turn_id, $object_id, $tag_array[$i] ) ) ); 
