@@ -21,12 +21,20 @@
  */
  
 function funTagging() {
+  
+  echo '<div class="funTagging">';
+  
   // deal with submitted data, if any
   if($_POST['submitTags'] == "Tag!") {
     saveTurn('funTagging');
-  } 
+  } else { 
+    // if first load - set game state how? ###
+   echo '<div class="messages">';
+   echo '<p><img src="'. MMG_IMAGE_URL . 'Dora_pensive.png" align="left"> "The disk drive containing most of the information we need to put our collections online has disappeared... Can you help us re-label some of our objects?</p>';
+   echo '<p>Quick - add some words to describe this object using words that would help someone find it on Google."</p>';
+   echo '</div>';   
+  }
     
-  echo '<div class="funTagging">'; // put a background wash on here? ###
   $object_id = printObject(); 
     
   // call the form, give it the object_id for hidden field

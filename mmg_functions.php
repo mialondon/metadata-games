@@ -25,6 +25,8 @@ require_once(dirname(__FILE__) . "/includes/mmg_funtagging.php");
 require_once(dirname(__FILE__) . "/includes/mmg_factseeker.php");
 require_once(dirname(__FILE__) . "/includes/mmg_reports.php");
 
+define('MMG_IMAGE_URL',  WP_CONTENT_URL.'/plugins/'. basename(dirname(__FILE__)) . '/includes/images/');
+
 /**
  * Gets either a random object or a requested object, prints it to screen
  * 
@@ -346,7 +348,7 @@ function saveTagsWithScores($turn_id) {
     
   $tags = $wpdb->prepare($_POST['tags'] );
   $object_id = $wpdb->prepare($_POST['object_id'] );
-  echo '<p class="turn_results">You added tags: '.$_POST['tags']. ' and you scored 10 points. Hooray!</p>'; // make a $variable ###
+  echo '<p class="messages"><img src="'. MMG_IMAGE_URL . 'Dora_talking.png" align="left"> "Thank you! You added tags: '.$_POST['tags']. ' and you scored 10 points. Can you tag this object too?"</p>'; // make a $variable ###
 
   // for each comma-separated tag, add a row to the tags table
   $tag_array = explode(",",$tags);
