@@ -5,11 +5,11 @@
  * File information:
  * Contains functions to get the objects, print them to the screen, run the turns, save data, etc
  * 
-*/
+ */
 
 /*
-Copyright (C) 2010 Mia Ridge
-*/
+ * Copyright (C) 2010 Mia Ridge
+ */
 
 // ### Add as plugin config setting so it's generalisable. Also db name, not just table names
 if ($_SERVER['HTTP_HOST'] == 'localhost' || $_SERVER['HTTP_HOST'] == 'www.museumgames.org.uk') {
@@ -24,8 +24,12 @@ require_once(dirname(__FILE__) . "/includes/mmg_simplefact.php");
 require_once(dirname(__FILE__) . "/includes/mmg_funtagging.php");
 require_once(dirname(__FILE__) . "/includes/mmg_factseeker.php");
 require_once(dirname(__FILE__) . "/includes/mmg_reports.php");
+require_once(dirname(__FILE__) . "/includes/mmg_widgets.php");
 
 define('MMG_IMAGE_URL',  WP_CONTENT_URL.'/plugins/'. basename(dirname(__FILE__)) . '/includes/images/');
+define('MMG_PLUGIN_URL',  WP_PLUGIN_URL.'/includes/'. basename(dirname(__FILE__))); // echo this to check it
+
+//$wp_wall_plugin_url =  trailingslashit( WP_PLUGIN_URL.'/'. dirname( plugin_basename(__FILE__) );
 
 /**
  * Gets either a random object or a requested object, prints it to screen
@@ -50,6 +54,9 @@ function printObject() {
     $institution = urldecode($turn_object->institution);
     $source_display_url = urldecode($turn_object->source_display_url);
     $image_url = urldecode($turn_object->image_url);
+    $interpretative_date = urldecode($turn_object->interpretative_date);
+    $interpretative_place = urldecode($turn_object->interpretative_place);
+    $accession_number = urldecode($turn_object->accession_number);
     
     // print object name
     $object_name = urldecode($turn_object->name); 
@@ -61,13 +68,23 @@ function printObject() {
     }
     
     // ### add test for date and place not being null and add commas appropriately
-    echo '<p class="source">Object from '.$institution.'.';
+    echo '<p class="source">';
     if ($source_display_url != '') {
-      echo ' View the <a href="'.$source_display_url.'">original object</a>.';
+      echo 'View <a href="'.$source_display_url.'">object on the '.$institution.' site</a>.';
+    } else {
+      echo 'Object from: '.$institution.'.';
     }
     echo '</p>';
     
-    echo '<p class="tombstone">'.urldecode($turn_object->interpretative_date).', '.urldecode($turn_object->interpretative_place).' (Accession num: '.urldecode($turn_object->accession_number).')</p>';
+    echo '<p class="tombstone">';
+    
+    if ($interpretative_date != '') {
+      echo 'Date: '. $interpretative_date . '&nbsp;&nbsp;';
+    }
+    if ($interpretative_place != '') {
+      echo 'Place: '. $interpretative_place . '&nbsp;&nbsp;';
+    }
+    echo '(Accession num: '.$accession_number.')</p>';
     
     // Powerhouse objects have auto-cropped images that end up being a bit too mysterious for gameplay
     // so um, sneakily update the URL to get an uncropped version of the image

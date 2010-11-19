@@ -39,21 +39,20 @@ function funTagging() {
     
   // call the form, give it the object_id for hidden field
   printFormFunTag($object_id);
+      
+  // get a new object
+  echo "<p>Not sure what to do with this object?  You can skip it... ";
+  printRefresh();
+  echo "</p>";
   
   // make a function to deal with printing to the screen if obj not found
   printObjectBookmark($object_id);
-      
-  // make a function to print the 'need another? refresh' message
-
-    // get a new object
-    echo "<p>Not sure what to do with this object?  You can skip it... ";
-    printRefresh();
-    echo "</p>";
-    
-    echo '</div>'; 
-    
-    // temp proof-of-concept
-    mmgSiteStats();
+  
+  echo '</div>'; // end of game-specific div
+  
+  // temp proof-of-concept
+  mmgSiteStats();
+  mmgPlayerScoreWidget_test();
 
 }
 
@@ -66,16 +65,26 @@ function funTagging() {
 function printFormFunTag($object_id) {
 $permalink = get_permalink($id); 
 ?>
+<div class="wFormContainer">
+<div class="wForm wFormdefaultWidth">
+  <div id="tfa_tags-D" class="oneField">
+
   <form action="<?php echo $permalink ?>" method="post">
   <input type="hidden" value="<?php echo $object_id ?>" name="object_id" />
   <fieldset>
   <legend>Add words to describe this object</legend>
-  <label for="tags">Tags</label>
-  <input type="text" name="tags" class="tags" size="80" maxlength="300" value="" />
+  <label class="preField" for="tags">Tags</label>
+  <input type="text" name="tags" class="tags" size="60" maxlength="300" value="" />
   <p class="submit"><input class="button" name="submitTags" type="submit" value="Tag!" /></p>
+  <!--<span class="field-hint-inactive" id="tfa_tags-H"><span>Tip: separate each tag with a comma, like this: tag, label, words to describe things, name.</span></span>-->
   <p class="hint">Tip: separate each tag with a comma, like this: tag, label, words to describe things, name.</p>
   </fieldset>
   </form>
+  
+  </div>
+</form></div>
+</div>   
+  
 <?php  
 }
 
