@@ -29,6 +29,27 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
 
+// ### Add as plugin config setting so it's generalisable. Also db name, not just table names
+if ($_SERVER['HTTP_HOST'] == 'localhost' || $_SERVER['HTTP_HOST'] == 'www.museumgames.org.uk') {
+  define("table_prefix", "wp_mmg_");
+} elseif ($_SERVER['HTTP_HOST'] == 'www.museumgam.es')  {
+  define("table_prefix", "wplive_mmg_");
+}
+
+// include the game-specific files
+require_once(dirname(__FILE__) . "/includes/mmg_simpletagging.php");
+require_once(dirname(__FILE__) . "/includes/mmg_simplefact.php");
+require_once(dirname(__FILE__) . "/includes/mmg_funtagging.php");
+require_once(dirname(__FILE__) . "/includes/mmg_factseeker.php");
+require_once(dirname(__FILE__) . "/includes/mmg_reports.php");
+require_once(dirname(__FILE__) . "/includes/mmg_widgets.php");
+
+define('MMG_IMAGE_URL',  WP_CONTENT_URL.'/plugins/'. basename(dirname(__FILE__)) . '/includes/images/');
+define('MMG_PLUGIN_URL',  WP_PLUGIN_URL.'/includes/'. basename(dirname(__FILE__))); // echo this to check it
+
+//$wp_wall_plugin_url =  trailingslashit( WP_PLUGIN_URL.'/'. dirname( plugin_basename(__FILE__) );
+
+
 /////////// set up activation and deactivation stuff
 register_activation_hook(__FILE__,'mmg_install');
 
@@ -206,55 +227,44 @@ function parameter_gamecode($gVars) {
 }
 add_filter('query_vars', 'parameter_gamecode');
 
-// add widget
-function mmgPlayerScoreWidgetInit()  
- { 
-     // register widget
-     // http://tut7.com/2010/06/17/how-to-write-a-%E2%80%9Cmost-popular-by-views%E2%80%9D-wordpress-plugin/
-     // says parameters parameters are: id of the container,title on the widget page,content function
-     wp_register_sidebar_widget('mmg_player_score', 'mmg player score', 'mmgPlayerScoreWidget_test'); 
- }
- 
- add_action('init', 'mmgPlayerScoreWidgetInit');
- 
-// from http://codex.wordpress.org/Widgets_API, to learn
-/**
- * FooWidget Class
- */
-class mmgPlayerScoreWidget extends WP_Widget {
-    /** constructor */
-    function mmgPlayerScoreWidget() {
-        parent::WP_Widget(false, $name = 'mmgPlayerScoreWidget');	
-    }
+// add widget, trying smashing book method this time
+class mmgHello extends WP_Widget {
+  
+  function mmgHello() {
+	parent::WP_Widget(false, $name = 'mmg Hello');
+  }
+  
+  function widget($args, $instance) {
+	extract( $args );
+	?>
+		<?php echo $before_widget; ?>
+			<?php echo $before_title
+				. $instance['title'] // will be settable by widget users
+				. $after_title; ?>
+			Your objects may go here
+                        <?php mmgPlayerObjects();
+                        ?>
+		<?php echo $after_widget; ?>
+	<?php
+  }
+  
+  function update($new_instance, $old_instance) {
+	return $new_instance;
+  }
+  
+  // use something like this to trap for nasties on the way into the update function
+  // $instance['music'] = strip_tags( $new_instance['music'] );
+  
+  function form($instance) {
+	$title = esc_attr($instance['title']);
+	?>
+          <p>
+            <label for="<?php echo $this->get_field_id('title'); ?>">Title: <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" /></label>
+          </p>
+	<?php
+  }
+}
 
-    /** @see WP_Widget::widget */
-    function widget($args, $instance) {		
-        extract( $args );
-        $title = apply_filters('widget_title', $instance['title']);
-        ?>
-              <?php echo $before_widget; ?>
-                  <?php if ( $title )
-                        echo $before_title . $title . $after_title; ?>
-                  Hello, other World!
-              <?php echo $after_widget; ?>
-        <?php
-    }
-
-    /** @see WP_Widget::update */
-    function update($new_instance, $old_instance) {				
-	$instance = $old_instance;
-	$instance['title'] = strip_tags($new_instance['title']);
-        return $instance;
-    }
-
-    /** @see WP_Widget::form */
-    function form($instance) {				
-        $title = esc_attr($instance['title']);
-        ?>
-            <p><label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:'); ?> <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" /></label></p>
-        <?php 
-    }
-
-} // class mmgPlayerScoreWidget 
+add_action('widgets_init', create_function('', 'return register_widget("mmgHello");'));
 
 ?>

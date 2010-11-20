@@ -11,25 +11,6 @@
  * Copyright (C) 2010 Mia Ridge
  */
 
-// ### Add as plugin config setting so it's generalisable. Also db name, not just table names
-if ($_SERVER['HTTP_HOST'] == 'localhost' || $_SERVER['HTTP_HOST'] == 'www.museumgames.org.uk') {
-  define("table_prefix", "wp_mmg_");
-} elseif ($_SERVER['HTTP_HOST'] == 'www.museumgam.es')  {
-  define("table_prefix", "wplive_mmg_");
-}
-
-// include the game-specific files
-require_once(dirname(__FILE__) . "/includes/mmg_simpletagging.php");
-require_once(dirname(__FILE__) . "/includes/mmg_simplefact.php");
-require_once(dirname(__FILE__) . "/includes/mmg_funtagging.php");
-require_once(dirname(__FILE__) . "/includes/mmg_factseeker.php");
-require_once(dirname(__FILE__) . "/includes/mmg_reports.php");
-require_once(dirname(__FILE__) . "/includes/mmg_widgets.php");
-
-define('MMG_IMAGE_URL',  WP_CONTENT_URL.'/plugins/'. basename(dirname(__FILE__)) . '/includes/images/');
-define('MMG_PLUGIN_URL',  WP_PLUGIN_URL.'/includes/'. basename(dirname(__FILE__))); // echo this to check it
-
-//$wp_wall_plugin_url =  trailingslashit( WP_PLUGIN_URL.'/'. dirname( plugin_basename(__FILE__) );
 
 /**
  * Gets either a random object or a requested object, prints it to screen

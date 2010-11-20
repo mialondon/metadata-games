@@ -52,7 +52,7 @@ function funTagging() {
   
   // temp proof-of-concept
   mmgSiteStats();
-  mmgPlayerScoreWidget_test();
+  mmgPlayerObjects();
 
 }
 

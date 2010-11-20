@@ -12,10 +12,12 @@
  * Copyright (C) 2010 Mia Ridge
  */
 
-
-function mmgPlayerScoreWidget_test()  // this actually works
+/*
+ * Display rows of empty thumbnail boxes and fills them with the objects the player has tagged
+ */
+function mmgPlayerObjects()  // this actually works
  { 
-     echo "Hello World!"; 
+    echo "Hello World!"; 
  } 
 
 
