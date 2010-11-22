@@ -52,7 +52,10 @@ function funTagging() {
   
   // temp proof-of-concept
   mmgSiteStats();
-  mmgPlayerObjects();
+  
+  extract(shortcode_atts(array( // lowercase cos the short tags are, elsewhere camel.
+  "gametype" => 'simpletagging' // default
+  ), $atts));
 
 }
 

@@ -17,7 +17,46 @@
  */
 function mmgPlayerObjects()  // this actually works
  { 
-    echo "Hello World!"; 
+    echo "Hello World!";
+    ?><table border="0" bordercolor="#FFCC00" style="background-color:#FFFFCC" width="300" cellpadding="0" cellspacing="0">
+	<tr>
+		<td>Table Cell</td>
+		<td>Table Cell</td>
+		<td>Table Cell</td>
+		<td>Table Cell</td>
+		<td>Table Cell</td>
+	</tr>
+	<tr>
+		<td>Table Cell</td>
+		<td>Table Cell</td>
+		<td>Table Cell</td>
+		<td>Table Cell</td>
+		<td>Table Cell</td>
+	</tr>
+	<tr>
+		<td>Table Cell</td>
+		<td>Table Cell</td>
+		<td>Table Cell</td>
+		<td>Table Cell</td>
+		<td>Table Cell</td>
+	</tr>
+	<tr>
+		<td>Table Cell</td>
+		<td>Table Cell</td>
+		<td>Table Cell</td>
+		<td>Table Cell</td>
+		<td>Table Cell</td>
+	</tr>
+	<tr>
+		<td>Table Cell</td>
+		<td>Table Cell</td>
+		<td>Table Cell</td>
+		<td>Table Cell</td>
+		<td>Table Cell</td>
+	</tr>
+</table>
+
+    <?php
  } 
 
 

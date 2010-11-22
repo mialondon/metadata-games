@@ -187,8 +187,6 @@ function mmg_setting_game_length() {
 /////////// set up shortcode
 // Sample: [mmgame gametype=simpletagging]
 function gameShortCode($atts, $content=null) {
-  // do stuff, probably by calling other functions depending on what params are added
-  // explode attributes array
   
   if(@is_file(ABSPATH.'/wp-content/plugins/mmg/mmg_functions.php')) {
       include_once(ABSPATH.'/wp-content/plugins/mmg/mmg_functions.php'); 
@@ -207,6 +205,9 @@ function gameShortCode($atts, $content=null) {
     // simple tag game as default
     simpleTagging();
   }
+  
+  $GLOBALS['my_game_code'] = $gametype;
+
 }
 
 // Add the shortcode
@@ -214,7 +215,7 @@ add_shortcode('mmgame', 'gameShortCode');
 
 /* adding a filter for object ID and gamecode so players can return via a link */
 function parameter_objID($oVars) {
-    $oVars[] = "obj_ID";    // represents the name of the product category as shown in the URL
+    $oVars[] = "obj_ID"; 
     return $oVars;
 }
 
@@ -222,7 +223,7 @@ function parameter_objID($oVars) {
 add_filter('query_vars', 'parameter_objID');
 
 function parameter_gamecode($gVars) {
-    $gVars[] = "gamecode";    // represents the name of the product category as shown in the URL
+    $gVars[] = "gamecode";    // not used?
     return $gVars;
 }
 add_filter('query_vars', 'parameter_gamecode');
@@ -241,8 +242,7 @@ class mmgHello extends WP_Widget {
 			<?php echo $before_title
 				. $instance['title'] // will be settable by widget users
 				. $after_title; ?>
-			Your objects may go here
-                        <?php mmgPlayerObjects();
+                        <?php drawCompletionBox($GLOBALS['my_game_code']);
                         ?>
 		<?php echo $after_widget; ?>
 	<?php
@@ -266,5 +266,8 @@ class mmgHello extends WP_Widget {
 }
 
 add_action('widgets_init', create_function('', 'return register_widget("mmgHello");'));
+
+// http://englishmike.net/2008/07/07/wordpress-quick-tips-3adding-a-shortcode-to-a-sidebar-widget/
+add_filter('widget_text', 'do_shortcode');   // ### hmm
 
 ?>

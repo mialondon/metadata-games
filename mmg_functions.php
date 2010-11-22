@@ -158,10 +158,9 @@ function mmgGetObject($obj_id = null) {
   global $wpdb;
   
   if(!empty($obj_id)) {
-    //echo $obj_id;
     $row = $wpdb->get_row ($wpdb->prepare ("SELECT * FROM ". table_prefix."objects WHERE object_id = $obj_id LIMIT 1"));
   } else {
-    $row = randomRow(table_prefix.'objects', 'object_id'); // change to table prefix stuff
+    $row = randomRow(table_prefix.'objects', 'object_id'); 
   }
 
   if(is_object($row)) {
@@ -208,22 +207,25 @@ function mmgGetObject($obj_id = null) {
 function saveTurn($game_code) {
   // ### check that $game_code isn't null
 
-  global $wpdb; // would already be global, presumably?
+  global $wpdb; 
+  global $current_user;
  
   // prepare data
   $object_id = $wpdb->prepare($_POST['object_id'] );
-  //$ip=@$REMOTE_ADDR; // if globals, otherwise...
   // game code, game version
   $session_id = ($_COOKIE['PHPSESSID']); 
   $ip_address = $_SERVER['REMOTE_ADDR'];
-  
-  // WordPress username $wp_username, if they have one an
+
+  if(is_user_logged_in()) {
+    get_currentuserinfo();
+    $wp_username = $current_user->user_login; // could also use display name but KISS for now
+  } // will need to go back and update previous turns with login if they sign up ###
   
   $wpdb->query( $wpdb->prepare( "
   INSERT INTO ". table_prefix."turns 
-  (object_id, game_code, session_id, ip_address )
-  VALUES ( %d, %s, %s, %s )" ,
-  array( $object_id, $game_code, $session_id, $ip_address ) ) ); 
+  (object_id, game_code, session_id, ip_address, wp_username )
+  VALUES ( %d, %s, %s, %s, %s )" ,
+  array( $object_id, $game_code, $session_id, $ip_address, $wp_username ) ) ); 
   $turn_id = mysql_insert_id();
   
   // call the appropriate save_$ugc functions with turn_id
@@ -235,13 +237,72 @@ function saveTurn($game_code) {
      saveFact($turn_id); 
      break; 
    case "funTagging": 
-     saveTagsWithScores($turn_id); 
+     saveTagsWithScores($turn_id);
      break;   
    case "factSeeker":
      saveFactWithScores($turn_id); 
      break;  
   }
 
+}
+
+/**
+ * Take the object id, get the thumbnail, add it to the next free spot in the completion box
+ * 
+ * @since 0.3
+ * @uses $wpdb
+ * 
+ */
+function drawCompletionBox($game_code) {
+  // store object id for player (table or view???? ####)
+  
+  // get the object ID, write it to the completion box (then do images)
+  
+  global $wpdb;
+  global $current_user;
+
+  // number of objects tagged
+  $sql = "SELECT " . table_prefix. "turns.object_id, image_url, turn_id FROM ". table_prefix. "turns, ". table_prefix. "objects WHERE ". table_prefix. "turns.object_id = ". table_prefix. "objects.object_id AND game_code = '" . $game_code . "' "; // does case matter for game code? ###
+  
+  if(is_user_logged_in()) {
+    get_currentuserinfo();
+    $sql = $sql . " AND wp_username = '" . $current_user->user_login ."' "; // could also use display name but KISS for now
+  } else {
+    $sql = $sql . " AND session_id = '" .   $session_id = ($_COOKIE['PHPSESSID']) ."' "; 
+  } 
+  $sql = $sql . ' ORDER BY turn_id' ;
+  
+  $results = $wpdb->get_results($wpdb->prepare ($sql));
+  
+  //$wpdb->show_errors();
+  //$wpdb->print_error();
+
+  if ($results) {
+    
+    $c = $wpdb->num_rows;
+    $tc = 5 - ($c % 5); // how many empty cells to fill?
+    $i = 1; // for table row end
+    
+    echo '<table border="0" bordercolor="#FFCC00" style="background-color:#FFFFCC" width="280" cellpadding="0" cellspacing="0"><tr>';
+    foreach ($results as $result) {
+      echo '<td>';
+      // echo $result->object_id; // should update view to get object title for alt text/title tip
+      echo '<img class="widget_thumbnail" src="'. urldecode($result->image_url) .'" width="40" />';
+      echo "</td>";
+      if ($i % 5 == 0) {
+        echo '</tr><tr>';
+      }
+      $i++;
+    }
+    while ($tc > 0) { // fill empty cells with '?' to encourage filling
+      echo '<td><span class="next_box">?</span></td>';
+      $tc = $tc-1;
+    }
+    echo '</tr></table>';
+  } else {
+    echo 'no results yet';
+  }
+  
 }
 
 /**
@@ -319,6 +380,8 @@ function saveFact($turn_id) {
 function saveFactWithScores($turn_id) {
     // do stuff
   global $wpdb;
+  
+  $score = 250; // 250 points per fact for now ### make a config setting
     
   $tags = $wpdb->prepare($_POST['tags'] );
   $object_id = $wpdb->prepare($_POST['object_id'] );
@@ -326,32 +389,42 @@ function saveFactWithScores($turn_id) {
   $fact_summary = $wpdb->prepare($_POST['fact_summary'] );
   $fact_source = $wpdb->prepare($_POST['fact_source'] ); 
   
-  echo '<p class="turn_results">You added fact: '.$_POST['fact_summary'] .' and you scored points!</p>';
+  echo '<p class="turn_results">You added fact: '.$_POST['fact_summary'] .' and you scored ' . $score . ' points!</p>';
   
     $wpdb->query( $wpdb->prepare( "
     INSERT INTO ". table_prefix."turn_facts 
     (turn_id, object_id, fact_headline, fact_summary, fact_source )
     VALUES ( %d, %d, %s, %s, %s )" ,
     array( $turn_id, $object_id, $fact_headline, $fact_summary, $fact_source ) ) ); 
+
+  // update the turn table with their score
+  $wpdb->query( $wpdb->prepare( "
+  UPDATE ". table_prefix."turns
+  SET turn_score = " . $score . "
+  WHERE turn_id = " . $turn_id . " "
+  ) );   
     
-    cp_alterPoints( cp_currentUser(), 150); // 150 points per fact for now ### make a $var
-    // what if there's no user?  Add points to turn?
+    cp_alterPoints( cp_currentUser(), $score); 
      
 }
 
 function saveTagsWithScores($turn_id) { 
-    // do stuff
-  global $wpdb;
-//  global $my_plugin_table; // ### should set this up
-    
-  $tags = $wpdb->prepare($_POST['tags'] );
-  $object_id = $wpdb->prepare($_POST['object_id'] );
-  echo '<p class="messages"><img src="'. MMG_IMAGE_URL . 'Dora_talking.png" align="left"> "Thank you! You added tags: '.$_POST['tags']. ' and you scored 10 points. Can you tag this object too?"</p>'; // make a $variable ###
 
-  // for each comma-separated tag, add a row to the tags table
+  global $wpdb;
+  $tags = $wpdb->prepare($_POST['tags'] );
+  $object_id = $wpdb->prepare($_POST['object_id'] );  
+    
+  // find out how many tags submitted (for the score)
   $tag_array = explode(",",$tags);
   $count=count($tag_array);
   
+  // score is currently 5 points per tag.
+  $score = $count * 5;  
+  
+  // make variant thank you messages, depending on count/random ###
+  echo '<p class="messages"><img src="'. MMG_IMAGE_URL . 'Dora_talking.png" align="left"> "Thank you! You added tags: '.$_POST['tags']. ' and you scored ' . $score . ' points. Can you tag this object too?"</p>';
+  
+  // for each comma-separated tag, add a row to the tags table
   for($i=0;$i<$count;$i++)
   {
     $wpdb->query( $wpdb->prepare( "
@@ -361,10 +434,17 @@ function saveTagsWithScores($turn_id) {
     array( $turn_id, $object_id, $tag_array[$i] ) ) ); 
   }
   
+  // update the turn table with their score
+  $wpdb->query( $wpdb->prepare( "
+  UPDATE ". table_prefix."turns
+  SET turn_score = " . $score . "
+  WHERE turn_id = " . $turn_id . " "
+  ) );   
+  
   // add points to the users' account (if they have one. If they don't, scores are saved in and calculated from
   // turns table. I can bulk add their scores when they join)
   // not sure about relying so directly on someone else's plugin, maybe move this into a separate file and keep the local points option? ###
-  cp_alterPoints( cp_currentUser(), 10);
+  cp_alterPoints( cp_currentUser(), $score); // this is doubling up, but just for now ###
 }
 
 ?>
