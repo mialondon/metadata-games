@@ -38,49 +38,52 @@ function printObject() {
     $interpretative_date = urldecode($turn_object->interpretative_date);
     $interpretative_place = urldecode($turn_object->interpretative_place);
     $accession_number = urldecode($turn_object->accession_number);
-    
+
+    $object_print_string;
+ 
     // print object name
     $object_name = urldecode($turn_object->name); 
     if ($object_name != 'None') { // Many Powerhouse objects don't have names  
-       echo '<h2 class="objectname">'.urldecode($turn_object->name).'</h2>';
+       $object_print_string = '<h2 class="objectname">'.urldecode($turn_object->name).'</h2>';
     } else {
       // use the description instead
-      echo '<p class="objectdescription">'.urldecode($turn_object->description).'</p>';
+      $object_print_string = '<p class="objectdescription">'.urldecode($turn_object->description).'</p>';
     }
     
     // ### add test for date and place not being null and add commas appropriately
-    echo '<p class="source">';
+    $object_print_string .= '<p class="source">';
     if ($source_display_url != '') {
-      echo 'View <a href="'.$source_display_url.'">object on the '.$institution.' site</a>.';
+      $object_print_string .= 'View <a href="'.$source_display_url.'">object on the '.$institution.' site</a>.';
     } else {
-      echo 'Object from: '.$institution.'.';
+      $object_print_string .= 'Object from: '.$institution.'.';
     }
-    echo '</p>';
+    $object_print_string .= '</p>';
     
-    echo '<p class="tombstone">';
+    $object_print_string .= '<p class="tombstone">';
     
     if ($interpretative_date != '') {
-      echo 'Date: '. $interpretative_date . '&nbsp;&nbsp;';
+      $object_print_string .= 'Date: '. $interpretative_date . '&nbsp;&nbsp;';
     }
     if ($interpretative_place != '') {
-      echo 'Place: '. $interpretative_place . '&nbsp;&nbsp;';
+      $object_print_string .= 'Place: '. $interpretative_place . '&nbsp;&nbsp;';
     }
-    echo '(Accession num: '.$accession_number.')</p>';
+    $object_print_string .= '(Accession num: '.$accession_number.')</p>';
     
     // Powerhouse objects have auto-cropped images that end up being a bit too mysterious for gameplay
     // so um, sneakily update the URL to get an uncropped version of the image
     if ($institution == 'Powerhouse Museum') {
       $image_url = str_replace("/thumbs/", "/TLF_mediums/", $image_url);
     } 
-    echo '<img class="object_image" src="'. $image_url .'" />';  
+    $object_print_string .= '<img class="object_image" src="'. $image_url .'" />';  
   
   } else {
-    echo "<p>Whoops, that didn't work.  We can't find the object you're looking for - try refreshing the page. "; // different messages for specific obj sought but not found?
+    $object_print_string .= "<p>Whoops, that didn't work.  We can't find the object you're looking for - try refreshing the page. "; // different messages for specific obj sought but not found?
     printRefresh();
-    echo "</p>";
+    $object_print_string .= "</p>";
   }   
   
-  return $turn_object->object_id;
+  return array ($turn_object->object_id, $object_print_string);
+
 } 
  
 
@@ -254,6 +257,8 @@ function saveTurn($game_code) {
  * 
  */
 function drawCompletionBox($game_code) {
+  echo "<h3>Objects you've tagged in this game</h3>";
+
   // store object id for player (table or view???? ####)
   
   // get the object ID, write it to the completion box (then do images)
@@ -277,13 +282,14 @@ function drawCompletionBox($game_code) {
   //$wpdb->show_errors();
   //$wpdb->print_error();
 
+  echo '<table border="0" bordercolor="#FFCC00" style="background-color:#FFFFCC" width="280" cellpadding="0" cellspacing="0"><tr>';
+
   if ($results) {
     
     $c = $wpdb->num_rows;
     $tc = 5 - ($c % 5); // how many empty cells to fill?
     $i = 1; // for table row end
     
-    echo '<table border="0" bordercolor="#FFCC00" style="background-color:#FFFFCC" width="280" cellpadding="0" cellspacing="0"><tr>';
     foreach ($results as $result) {
       echo '<td>';
       // echo $result->object_id; // should update view to get object title for alt text/title tip
@@ -299,9 +305,15 @@ function drawCompletionBox($game_code) {
       $tc = $tc-1;
     }
     echo '</tr></table>';
-  } else {
-    echo 'no results yet';
+  } else {  // 'no results yet';
+    $tc = 5;
+    while ($tc > 0) { // fill empty cells with '?' to encourage filling
+      echo '<td><span class="next_box">?</span></td>';
+      $tc = $tc-1;
+    }
   }
+
+  echo '</tr></table>';
   
 }
 
@@ -422,7 +434,7 @@ function saveTagsWithScores($turn_id) {
   $score = $count * 5;  
   
   // make variant thank you messages, depending on count/random ###
-  echo '<p class="messages"><img src="'. MMG_IMAGE_URL . 'Dora_talking.png" align="left"> "Thank you! You added tags: '.$_POST['tags']. ' and you scored ' . $score . ' points. Can you tag this object too?"</p>';
+  echo '<p class="messages"><img src="'. MMG_IMAGE_URL . 'Dora_talking.png" align="left"> "Thank you! You added ' . $count . ' tags and you scored <strong>' . $score . '</strong> points.  I\'ve added your object to your stash. Can you tag this object too?"</p>';
   
   // for each comma-separated tag, add a row to the tags table
   for($i=0;$i<$count;$i++)

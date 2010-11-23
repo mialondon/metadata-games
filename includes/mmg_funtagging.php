@@ -22,6 +22,8 @@
  
 function funTagging() {
   
+  list($object_id, $object_print_string) = printObject();
+  
   echo '<div class="funTagging">';
   
   // deal with submitted data, if any
@@ -35,7 +37,7 @@ function funTagging() {
    echo '</div>';   
   }
     
-  $object_id = printObject(); 
+  echo $object_print_string; 
     
   // call the form, give it the object_id for hidden field
   printFormFunTag($object_id);

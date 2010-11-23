@@ -162,8 +162,6 @@ function mmg_settings_page() {
 <?php settings_fields('mmg-settings-group'); ?>
 <?php _e('Game length (seconds)','mmg-plugin') ?> 
 
-<?php /* old way of registering a single field <input type="text" name="mmg_option_game_length" value="<?php echo get_option('mmg_option_game_length'); ?>"> */ ?>
-
 <?php mmg_setting_game_length(); ?>
 
 <p class="submit"><input type="submit" class="button-primary" value=<?php _e('Save changes', 'mmg-plugin') ?> /></p>
@@ -206,7 +204,7 @@ function gameShortCode($atts, $content=null) {
     simpleTagging();
   }
   
-  $GLOBALS['my_game_code'] = $gametype;
+  $GLOBALS['my_game_code'] = $gametype; // so it's accessible in the widget
 
 }
 
@@ -255,19 +253,20 @@ class mmgHello extends WP_Widget {
   // use something like this to trap for nasties on the way into the update function
   // $instance['music'] = strip_tags( $new_instance['music'] );
   
-  function form($instance) {
+/* Users can't set the title, so commenting this out for now.
+   function form($instance) {
 	$title = esc_attr($instance['title']);
 	?>
           <p>
             <label for="<?php echo $this->get_field_id('title'); ?>">Title: <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" /></label>
           </p>
 	<?php
-  }
+  } */
 }
 
 add_action('widgets_init', create_function('', 'return register_widget("mmgHello");'));
 
 // http://englishmike.net/2008/07/07/wordpress-quick-tips-3adding-a-shortcode-to-a-sidebar-widget/
-add_filter('widget_text', 'do_shortcode');   // ### hmm
+//add_filter('widget_text', 'do_shortcode');   // ### hmm
 
 ?>
