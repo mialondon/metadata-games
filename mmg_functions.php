@@ -38,6 +38,8 @@ function printObject() {
     $interpretative_date = urldecode($turn_object->interpretative_date);
     $interpretative_place = urldecode($turn_object->interpretative_place);
     $accession_number = urldecode($turn_object->accession_number);
+    $object_id = urldecode($turn_object->object_id);
+   
 
     $object_print_string;
  
@@ -78,7 +80,7 @@ function printObject() {
   
   } else {
     $object_print_string .= "<p>Whoops, that didn't work.  We can't find the object you're looking for - try refreshing the page. "; // different messages for specific obj sought but not found?
-    printRefresh();
+    printRefresh($object_id);
     $object_print_string .= "</p>";
   }   
   
@@ -90,7 +92,7 @@ function printObject() {
 function printObjectBookmark($object_id) {
   $temp_object_id = checkForParams();
   
-    echo "<p>Want to think about it and come back to this object later?  Save this URL: ";
+    echo "<p>Tip: want more time to think about it and come back to this object later?  Save this URL: ";
     if (!empty($temp_object_id)) { // if the page had loaded a requested object successfully, print that URL
       echo '<a href="'.curPageURL().'">'.curPageURL().'</a>'; // since this includes the params we only want this if the query is known to be successful
     } else { // get random object
@@ -117,15 +119,17 @@ function checkForParams() {
   // also maybe gamecode (unless it's taken from the page slug etc)
 } 
 
+
+/*
+ * Print a 'refresh' link that reloads the page without an object.
+ * Add a parameter to trigger function to save the ID of the skipped object
+ */
 function printRefresh() {
 
-$permalink = get_permalink( $id );
-echo '<a href="'.$permalink.'">Pick me to get a new object.</a>';
-/*?>
-<form>
-<input type="button" class="button" value="get a different object" onclick="location.replace(document.URL)">
-</form>
-<?php */
+  $temp_object_id = checkForParams();
+
+  $permalink = get_permalink( $id );
+  echo '<a href="'.$permalink.'?skipped_id='.$temp_object_id.'">Pick me to get a new object.</a>';
 }
 
 /*
@@ -188,13 +192,30 @@ function mmgGetObject($obj_id = null) {
   global $wpdb;
   
   // get a random ID
-  $random_row = $wpdb->get_row ($wpdb->prepare ("SELECT $column FROM $table ORDER BY RAND(NOW()) LIMIT 1"));
+  $random_row = $wpdb->get_row ($wpdb->prepare ("SELECT $column FROM $table ORDER BY RAND(NOW()) LIMIT 1")); // ### add test that ID isn't in wp_mmg_objects_shown or is somehow less likely to be
    
   $random_row_id = $random_row->object_id;
   
   // get the full record for that ID
   $random_row = $wpdb->get_row ($wpdb->prepare ("SELECT * FROM $table WHERE object_id = $random_row_id LIMIT 1"));
   
+  // update wp_mmg_objects_shown with the ID of that object
+  // ### totally doesn't check for shown_count yet - it needs to
+  $test_id = $wpdb->get_row ($wpdb->prepare ("SELECT object_id FROM ". table_prefix."objects_shown WHERE object_id = " . $random_row_id . " "));
+  if(is_object($test_id)) {  // then update
+    $wpdb->query( $wpdb->prepare( "
+    UPDATE ". table_prefix."objects_shown
+    SET show_count = 1
+    WHERE object_id = " . $test_id->object_id . " "
+    ) );  
+  } else { // insert as not already there
+    $wpdb->query( $wpdb->prepare( "
+    INSERT INTO ". table_prefix."objects_shown 
+    (object_id, show_count)
+    VALUES ( %d, %d)" ,
+    array($random_row_id, 1) ) ); 
+  }
+
   return $random_row;
 
   }
@@ -401,7 +422,7 @@ function saveFactWithScores($turn_id) {
   $fact_summary = $wpdb->prepare($_POST['fact_summary'] );
   $fact_source = $wpdb->prepare($_POST['fact_source'] ); 
   
-  echo '<p class="turn_results">You added fact: '.$_POST['fact_summary'] .' and you scored ' . $score . ' points!</p>';
+  //echo '<p class="turn_results">You added fact: '.$_POST['fact_summary'] .' and you scored ' . $score . ' points!</p>';
   
     $wpdb->query( $wpdb->prepare( "
     INSERT INTO ". table_prefix."turn_facts 

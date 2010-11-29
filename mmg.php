@@ -30,9 +30,9 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 */
 
 // ### Add as plugin config setting so it's generalisable. Also db name, not just table names
-if ($_SERVER['HTTP_HOST'] == 'localhost' || $_SERVER['HTTP_HOST'] == 'www.museumgames.org.uk') {
+if ($_SERVER['HTTP_HOST'] == 'localhost' || $_SERVER['HTTP_HOST'] == 'www.museumgames.org.uk' || $_SERVER['HTTP_HOST'] == 'museumgames.org.uk') {
   define("table_prefix", "wp_mmg_");
-} elseif ($_SERVER['HTTP_HOST'] == 'www.museumgam.es')  {
+} elseif ($_SERVER['HTTP_HOST'] == 'www.museumgam.es' || $_SERVER['HTTP_HOST'] == 'museumgam.es')  {
   define("table_prefix", "wplive_mmg_");
 }
 
@@ -240,7 +240,9 @@ class mmgHello extends WP_Widget {
 			<?php echo $before_title
 				. $instance['title'] // will be settable by widget users
 				. $after_title; ?>
-                        <?php drawCompletionBox($GLOBALS['my_game_code']);
+                        <?php if (!empty ($GLOBALS['my_game_code'])) {
+                         drawCompletionBox($GLOBALS['my_game_code']);
+                        }
                         ?>
 		<?php echo $after_widget; ?>
 	<?php
@@ -266,7 +268,38 @@ class mmgHello extends WP_Widget {
 
 add_action('widgets_init', create_function('', 'return register_widget("mmgHello");'));
 
-// http://englishmike.net/2008/07/07/wordpress-quick-tips-3adding-a-shortcode-to-a-sidebar-widget/
-//add_filter('widget_text', 'do_shortcode');   // ### hmm
+/*
+ * Adding login widget
+ * To Do: change header message depending on whether user is logged in
+ *
+*/
+class mmgLoginWidget extends WP_Widget {
+  
+  function mmgLoginWidget() {
+	parent::WP_Widget(false, $name = 'mmg login widget');
+  }
+  
+  function widget($args, $instance) {
+    extract( $args );
+      ?>
+	<?php echo $before_widget; ?>
+  	<?php echo $before_title;
+          if (!empty($instance['title'])) {
+            echo $instance['title']; // if settable by widget users
+          } else {
+            echo 'Register or login to save your score';
+          }
+	echo $after_title; ?>
+        <?php wp_register('', ''); ?>
+		<?php echo $after_widget; ?>
+	<?php
+  }
+  
+  function update($new_instance, $old_instance) {
+	return $new_instance;
+  }
 
+}
+
+add_action('widgets_init', create_function('', 'return register_widget("mmgLoginWidget");'));
 ?>

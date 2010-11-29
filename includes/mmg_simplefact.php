@@ -40,7 +40,7 @@ function simpleFacts() {
 
     // get a new object
     echo "<p>Not sure what to do with this object?  You can skip it...";
-    printRefresh();
+    printRefresh($object_id);
     echo "</p>";
     
     echo '</div>'; 

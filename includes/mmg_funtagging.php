@@ -44,7 +44,7 @@ function funTagging() {
       
   // get a new object
   echo "<p>Not sure what to do with this object?  You can skip it... ";
-  printRefresh();
+  printRefresh($object_id);
   echo "</p>";
   
   // make a function to deal with printing to the screen if obj not found
