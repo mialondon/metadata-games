@@ -20,15 +20,15 @@
  * 
  */
  
-function funTagging() {
+function funtagging() {
   
   list($object_id, $object_print_string) = printObject();
   
-  echo '<div class="funTagging">';
+  echo '<div class="funtagging">';
   
   // deal with submitted data, if any
   if($_POST['submitTags'] == "Tag!") {
-    saveTurn('funTagging');
+    saveTurn('funtagging');
   } else { 
     // if first load - set game state how? ###
    echo '<div class="messages">';
@@ -63,7 +63,7 @@ function funTagging() {
 
 
 /**
- * Prints the form for the 'add tags' activity - funTagging version ###
+ * Prints the form for the 'add tags' activity - funtagging version ###
  * @since 0.1
  * 
  */

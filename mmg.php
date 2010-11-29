@@ -196,9 +196,9 @@ function gameShortCode($atts, $content=null) {
   if ($gametype == 'simplefacts') {
     simpleFacts();
   } elseif ($gametype == 'funtagging') {
-    funTagging();
+    funtagging();
   } elseif ($gametype == 'factseeker') {
-    factSeeker(); 
+    factseeker(); 
   } else {
     // simple tag game as default
     simpleTagging();
@@ -225,6 +225,13 @@ function parameter_gamecode($gVars) {
     return $gVars;
 }
 add_filter('query_vars', 'parameter_gamecode');
+
+/* adding a filter for skipped object ID */
+function parameter_skippedID($oVars) {
+    $oVars[] = "skipped_ID"; 
+    return $oVars;
+}
+add_filter('query_vars', 'parameter_skippedID');
 
 // add widget, trying smashing book method this time
 class mmgHello extends WP_Widget {
@@ -302,4 +309,38 @@ class mmgLoginWidget extends WP_Widget {
 }
 
 add_action('widgets_init', create_function('', 'return register_widget("mmgLoginWidget");'));
-?>
+
+
+/*
+ * Displays user scores by game, even if they're not registeret yet
+ *
+*/
+class mmgScoreWidget extends WP_Widget {
+  
+  function mmgScoreWidget() {
+	parent::WP_Widget(false, $name = 'mmg score widget');
+  }
+  
+  function widget($args, $instance) {
+    extract( $args );
+      ?>
+	<?php echo $before_widget; ?>
+  	<?php echo $before_title;
+          if (!empty($instance['title'])) {
+            echo $instance['title']; // if settable by widget users
+          } else {
+            echo 'Your score for this game:';
+          }
+	echo $after_title; ?>
+        <?php getUserScoreByGame(); ?>
+		<?php echo $after_widget; ?>
+	<?php
+  }
+  
+  function update($new_instance, $old_instance) {
+	return $new_instance;
+  }
+
+}
+
+add_action('widgets_init', create_function('', 'return register_widget("mmgScoreWidget");'));?>

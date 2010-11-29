@@ -20,13 +20,13 @@
  * 
  */
  
-function factSeeker() {
+function factseeker() {
   
   list($object_id, $object_print_string) = printObject();
   
   // deal with submitted data, if any
   if($_POST['submitTags'] == "Save your report") {
-    saveTurn('factSeeker');
+    saveTurn('factseeker');
   // make variant thank you messages, depending on count/random ###
   echo '<p class="messages"><img src="'. MMG_IMAGE_URL . 'Donald_talking.png" align="left"> "Thank you! The object you investigated has been added to your case file and you have been awarded ' . $score . ' points towards your next promotion. Can you tag this object too?"</p>';
   } else { 
@@ -38,7 +38,7 @@ function factSeeker() {
   echo '</div>';   
   }
     
-  echo '<div class="factSeeker">'; // put a background wash on here? ###
+  echo '<div class="factseeker">'; // put a background wash on here? ###
   echo $object_print_string; 
   
   printObjectBookmark($object_id); // save object URL?
@@ -59,7 +59,7 @@ function factSeeker() {
 
 
 /**
- * Prints the form for the 'add tags' activity - funTagging version ###
+ * Prints the form for the 'add tags' activity - funtagging version ###
  * @since 0.1
  * 
  */

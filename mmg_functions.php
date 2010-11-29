@@ -124,9 +124,9 @@ function checkForParams() {
  * Print a 'refresh' link that reloads the page without an object.
  * Add a parameter to trigger function to save the ID of the skipped object
  */
-function printRefresh() {
+function printRefresh($temp_object_id) {
 
-  $temp_object_id = checkForParams();
+ // $temp_object_id = checkForParams();
 
   $permalink = get_permalink( $id );
   echo '<a href="'.$permalink.'?skipped_id='.$temp_object_id.'">Pick me to get a new object.</a>';
@@ -260,10 +260,10 @@ function saveTurn($game_code) {
    case "simplefacts":
      saveFact($turn_id); 
      break; 
-   case "funTagging": 
+   case "funtagging": 
      saveTagsWithScores($turn_id);
      break;   
-   case "factSeeker":
+   case "factseeker":
      saveFactWithScores($turn_id); 
      break;  
   }
@@ -478,6 +478,32 @@ function saveTagsWithScores($turn_id) {
   // turns table. I can bulk add their scores when they join)
   // not sure about relying so directly on someone else's plugin, maybe move this into a separate file and keep the local points option? ###
   cp_alterPoints( cp_currentUser(), $score); // this is doubling up, but just for now ###
+}
+/* add function documentation ### */
+function getUserScoreByGame() {
+ 
+  if (!empty ($GLOBALS['my_game_code'])) {
+    global $wpdb;
+  
+    // number of objects tagged
+    $sql = "SELECT sum(turn_score) as player_score FROM wp_mmg_turns WHERE game_code = '".$GLOBALS['my_game_code']."' AND session_id = '". ($_COOKIE['PHPSESSID']) ."' ";
+    //SELECT count(DISTINCT object_id) AS num_objects FROM '. table_prefix.'turns ';
+  
+    $results = $wpdb->get_row ($wpdb->prepare ($sql));
+  
+    if(is_object($results)) {
+      if ($results->player_score > 0) {
+          echo $results->player_score . ' points.';
+      } else { // sql returned results row but no points for that game
+          echo 'No points for this game yet.  Start playing to earn points';  
+      }
+    }
+  } else {
+    echo 'No points for this game yet.  Start playing to earn points';
+  }
+  
+  
+  
 }
 
 ?>
