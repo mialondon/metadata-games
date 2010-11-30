@@ -23,7 +23,13 @@
  */
 function printObject() {
 
-  $temp_object_id = checkForParams(); // check to see if an object ID has been supplied
+  //$temp_object_id = checkForParams(); // check to see if an object ID has been supplied
+  list($object_id, $skipped_ID) = checkForParams();
+  
+  // do the check here for whether they've skipped an object
+  if (!empty($skipped_ID)) { 
+    mmgUpdateSkipped($skipped_ID);
+  } // if logic works that it's either skipped or passing an object, then merge this test with below
   
   if (!empty($temp_object_id)) { // get specific object 
     $turn_object = mmgGetObject($temp_object_id);
@@ -76,7 +82,11 @@ function printObject() {
     if ($institution == 'Powerhouse Museum') {
       $image_url = str_replace("/thumbs/", "/TLF_mediums/", $image_url);
     } 
-    $object_print_string .= '<img class="object_image" src="'. $image_url .'" />';  
+    $object_print_string .= '<img class="object_image" src="'. $image_url .'" />';
+    // add licence terms for Powerhouse
+    if ($institution == 'Powerhouse Museum') {
+      $object_print_string .= '<div class="object_image_credit">Thumbnails under license from Powerhouse Museum.</div>';
+    } 
   
   } else {
     $object_print_string .= "<p>Whoops, that didn't work.  We can't find the object you're looking for - try refreshing the page. "; // different messages for specific obj sought but not found?
@@ -90,7 +100,8 @@ function printObject() {
  
 
 function printObjectBookmark($object_id) {
-  $temp_object_id = checkForParams();
+  //$temp_object_id = checkForParams();
+  list($temp_object_id, $skipped_ID) = checkForParams();  
   
     echo "<p>Tip: want more time to think about it and come back to this object later?  Save this URL: ";
     if (!empty($temp_object_id)) { // if the page had loaded a requested object successfully, print that URL
@@ -109,12 +120,20 @@ function checkForParams() {
   global $wp_query;
   if (isset($wp_query->query_vars['obj_ID'])) {
     // sanitise the input ###
-   // echo "yes";
     $obj_id = $wp_query->query_vars['obj_ID'];
-    return $obj_id;
+    //return $obj_id;
   } else {
-    // return nothing ###
+    unset($obj_id); // will probably kill something
   }
+  
+  if (isset($wp_query->query_vars['skipped_ID'])) {
+    // sanitise the input ###
+    $skipped_ID = $wp_query->query_vars['skipped_ID'];
+    //return $skipped_ID;
+  } else {
+    unset($skipped_ID); // will probably kill something
+  }
+  return array ($obj_id, $skipped_ID); 
   
   // also maybe gamecode (unless it's taken from the page slug etc)
 } 
@@ -129,7 +148,7 @@ function printRefresh($temp_object_id) {
  // $temp_object_id = checkForParams();
 
   $permalink = get_permalink( $id );
-  echo '<a href="'.$permalink.'?skipped_id='.$temp_object_id.'">Pick me to get a new object.</a>';
+  echo '<a href="'.$permalink.'?skipped_ID='.$temp_object_id.'">Pick me to get a new object.</a>';
 }
 
 /*
@@ -164,22 +183,16 @@ function mmgGetObject($obj_id = null) {
   
   global $wpdb;
   
-  if(!empty($obj_id)) {
+  if(!empty($obj_id)) { // get a specific object if requested
     $row = $wpdb->get_row ($wpdb->prepare ("SELECT * FROM ". table_prefix."objects WHERE object_id = $obj_id LIMIT 1"));
   } else {
-    $row = randomRow(table_prefix.'objects', 'object_id'); 
+    $row = randomRow(table_prefix.'objects', 'object_id'); // get from view that doesn't include shown objects
   }
 
   if(is_object($row)) {
-  
-  /* session-based tests to check that the visitor hasn't seen 
-   * that object in that session already ### 
-   * get another row if they have
-   */
-   
+
   } else {
     $row = ''; // for some reason a row wasn't fetched
-    //echo 'sucks to be you, dude';
   }
   
   return $row;
@@ -197,15 +210,14 @@ function mmgGetObject($obj_id = null) {
   $random_row_id = $random_row->object_id;
   
   // get the full record for that ID
-  $random_row = $wpdb->get_row ($wpdb->prepare ("SELECT * FROM $table WHERE object_id = $random_row_id LIMIT 1"));
+  $random_row = $wpdb->get_row ($wpdb->prepare ("SELECT * FROM $table WHERE object_id = '$random_row_id' LIMIT 1"));
   
   // update wp_mmg_objects_shown with the ID of that object
-  // ### totally doesn't check for shown_count yet - it needs to
   $test_id = $wpdb->get_row ($wpdb->prepare ("SELECT object_id FROM ". table_prefix."objects_shown WHERE object_id = " . $random_row_id . " "));
   if(is_object($test_id)) {  // then update
     $wpdb->query( $wpdb->prepare( "
     UPDATE ". table_prefix."objects_shown
-    SET show_count = 1
+    SET show_count = show_count+1
     WHERE object_id = " . $test_id->object_id . " "
     ) );  
   } else { // insert as not already there
@@ -336,6 +348,8 @@ function drawCompletionBox($game_code) {
 
   echo '</tr></table>';
   
+    // temp proof-of-concept
+  mmgSiteStats();
 }
 
 /**
@@ -479,8 +493,34 @@ function saveTagsWithScores($turn_id) {
   // not sure about relying so directly on someone else's plugin, maybe move this into a separate file and keep the local points option? ###
   cp_alterPoints( cp_currentUser(), $score); // this is doubling up, but just for now ###
 }
+
+/*
+ * update the database with the ID of the skipped object
+ */
+function mmgUpdateSkipped($skipped_ID) {
+  global $wpdb;
+  echo '<h1>$skipped_ID '.$skipped_ID.'</h1>';
+  // update wp_mmg_objects_shown with the ID of that object
+  $test_id = $wpdb->get_row ($wpdb->prepare ("SELECT object_id FROM ". table_prefix."objects_shown WHERE object_id = " . $skipped_ID . " "));
+  if(is_object($test_id)) {  // then update
+    $wpdb->query( $wpdb->prepare( "
+    UPDATE ". table_prefix."objects_shown
+    SET skip_count = skip_count+1
+    WHERE object_id = " . $skipped_ID . " "
+    ) );  
+  } else { // insert as not already there
+    $wpdb->query( $wpdb->prepare( "
+    INSERT INTO ". table_prefix."objects_shown 
+    (object_id, skip_count)
+    VALUES ( %d, %d)" ,
+    array($skipped_ID, 1) ) ); 
+  }
+  
+}
+
+
 /* add function documentation ### */
-function getUserScoreByGame() {
+function mmgGetUserScoreByGame() {
  
   if (!empty ($GLOBALS['my_game_code'])) {
     global $wpdb;
@@ -490,7 +530,8 @@ function getUserScoreByGame() {
     //SELECT count(DISTINCT object_id) AS num_objects FROM '. table_prefix.'turns ';
   
     $results = $wpdb->get_row ($wpdb->prepare ($sql));
-  
+
+    echo '<ul><li>';  
     if(is_object($results)) {
       if ($results->player_score > 0) {
           echo $results->player_score . ' points.';
@@ -498,11 +539,10 @@ function getUserScoreByGame() {
           echo 'No points for this game yet.  Start playing to earn points';  
       }
     }
+    echo '</li></ul>'; 
   } else {
-    echo 'No points for this game yet.  Start playing to earn points';
+    echo 'No points for this game yet.  Start playing to earn points and help a museum.';
   }
-  
-  
   
 }
 

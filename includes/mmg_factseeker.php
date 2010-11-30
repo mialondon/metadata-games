@@ -28,11 +28,11 @@ function factseeker() {
   if($_POST['submitTags'] == "Save your report") {
     saveTurn('factseeker');
   // make variant thank you messages, depending on count/random ###
-  echo '<p class="messages"><img src="'. MMG_IMAGE_URL . 'Donald_talking.png" align="left"> "Thank you! The object you investigated has been added to your case file and you have been awarded ' . $score . ' points towards your next promotion. Can you tag this object too?"</p>';
+  echo '<div class="messages"><p><img src="'. MMG_IMAGE_URL . 'Donald_talking.png" align="left"> "Thank you! The object you investigated has been added to your case file and you have been awarded ' . $score . ' points towards your next promotion. Can you tag this object too?"</p></div>';
   } else { 
     // if first load - set game state how? ###
   echo '<div class="messages">';
-  echo '<p><img src="'. MMG_IMAGE_URL . 'Donald_serious.png" align="left"> "Hello, Holmes!  Thank god you\'re here - we couldn\'t solve The Case Of The Missing Records without you.  To help us solve the mystery, you\'ll need to use the clues on this page to find an interesting fact or link about this mysterious object. With any luck you\'ll get a promotion for your work.</p>';
+  echo '<p><img src="'. MMG_IMAGE_URL . 'Donald_serious.png" align="left"> "Hello, Holmes!  Thank god you\'re here - we couldn\'t solve The Case Of The Missing Records without you.  To help us solve the mystery, you\'ll need to use the clues on this page to find an interesting fact or link about this mysterious object.  You may need to hunt around for some relevant facts, but with luck and perseverance you\'ll get a promotion for your work.</p>';
   echo '<p>It\'s a while since your last case with us, so in case you need a reminder: <ul><li>use the clues available to help find an interesting fact or link about this object. If you aren\'t given enough information on the page to find something specific about this object, try to find something about the type of object or what it\'s used for instead.</li><li>report back to Headquarters with the form below."</li></ul></p>';
   //echo '<p>It\'s a while since your last case with us, so in case you need a reminder: 1. pick an object below 2) use the clues available to help find an interesting fact or link about this object 3) report back to Headquarters. With any luck you\'ll get a promotion for your work."</p>';
   echo '</div>';   

@@ -24,7 +24,7 @@ function mmgSiteStats() {
   $results = $wpdb->get_row ($wpdb->prepare ($sql));
 
   if(is_object($results)) {
-    echo 'Number of objects so far with added content: '. $results->num_objects;
+    echo 'So far players have added information to <strong>'. $results->num_objects . ' objects</strong> through games on this site.';
   } 
   
 }

@@ -296,8 +296,10 @@ class mmgLoginWidget extends WP_Widget {
           } else {
             echo 'Register or login to save your score';
           }
-	echo $after_title; ?>
-        <?php wp_register('', ''); ?>
+	echo $after_title; ?><ul>
+          <li>
+        <?php wp_register('', ''); ?></li>
+        </ul>
 		<?php echo $after_widget; ?>
 	<?php
   }
@@ -332,8 +334,9 @@ class mmgScoreWidget extends WP_Widget {
             echo 'Your score for this game:';
           }
 	echo $after_title; ?>
-        <?php getUserScoreByGame(); ?>
-		<?php echo $after_widget; ?>
+        <?php mmgGetUserScoreByGame();
+        ?>
+	  <?php echo $after_widget; ?>
 	<?php
   }
   

@@ -24,7 +24,6 @@ function funtagging() {
   
   list($object_id, $object_print_string) = printObject();
   
-  echo '<div class="funtagging">';
   
   // deal with submitted data, if any
   if($_POST['submitTags'] == "Tag!") {
@@ -36,7 +35,9 @@ function funtagging() {
    echo '<p>Quick - add some words to describe this object using words that would help someone find it on Google."</p>';
    echo '</div>';   
   }
-    
+  
+  echo '<div class="funtagging">';
+  
   echo $object_print_string; 
     
   // call the form, give it the object_id for hidden field
@@ -51,10 +52,7 @@ function funtagging() {
   printObjectBookmark($object_id);
   
   echo '</div>'; // end of game-specific div
-  
-  // temp proof-of-concept
-  mmgSiteStats();
-  
+    
   extract(shortcode_atts(array( // lowercase cos the short tags are, elsewhere camel.
   "gametype" => 'simpletagging' // default
   ), $atts));
