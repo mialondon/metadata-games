@@ -41,7 +41,7 @@ function simpleTagging() {
   // make a function to print the 'need another? refresh' message
 
     // get a new object
-    echo "<p>Not sure what to do with this object?  You can skip it... ";
+    echo "<p>Not sure about this object?";
     printRefresh($object_id);
     echo "</p>";
     

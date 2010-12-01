@@ -148,7 +148,7 @@ function printRefresh($temp_object_id) {
  // $temp_object_id = checkForParams();
 
   $permalink = get_permalink( $id );
-  echo '<a href="'.$permalink.'?skipped_ID='.$temp_object_id.'">Pick me to get a new object.</a>';
+  echo ' <a href="'.$permalink.'?skipped_ID='.$temp_object_id.'">Skip this object.</a>';
 }
 
 /*
@@ -168,8 +168,20 @@ function curPageURL() {
  return $pageURL;
 }
 
+/* quite possibly a mess
+ *
+ */
 
-
+function mmgGetRandomGamePage() {
+	//$pages = &get_pages(); // get only game pages ###
+	//$pageInd = rand(0, count($pages) - 1);
+	//echo $pages[$pageInd]->post_content;
+        $pages = get_pages();
+        $pageInd = rand(0, count($pages) - 1);
+//        $pages[$pageInd]->post_content; ?>
+<a href="<?php echo get_page_link($page[$pageInd]->ID) ?>"><?php echo $page[$pageInd]->post_title ?></a>
+<?php
+}
 
 
 
@@ -499,7 +511,7 @@ function saveTagsWithScores($turn_id) {
  */
 function mmgUpdateSkipped($skipped_ID) {
   global $wpdb;
-  echo '<h1>$skipped_ID '.$skipped_ID.'</h1>';
+
   // update wp_mmg_objects_shown with the ID of that object
   $test_id = $wpdb->get_row ($wpdb->prepare ("SELECT object_id FROM ". table_prefix."objects_shown WHERE object_id = " . $skipped_ID . " "));
   if(is_object($test_id)) {  // then update
@@ -521,6 +533,7 @@ function mmgUpdateSkipped($skipped_ID) {
 
 /* add function documentation ### */
 function mmgGetUserScoreByGame() {
+  $scoreString = '<ul><li>'; 
  
   if (!empty ($GLOBALS['my_game_code'])) {
     global $wpdb;
@@ -531,19 +544,20 @@ function mmgGetUserScoreByGame() {
   
     $results = $wpdb->get_row ($wpdb->prepare ($sql));
 
-    echo '<ul><li>';  
     if(is_object($results)) {
       if ($results->player_score > 0) {
-          echo $results->player_score . ' points.';
+          $scoreString .=  $results->player_score . ' points.';
       } else { // sql returned results row but no points for that game
-          echo 'No points for this game yet.  Start playing to earn points';  
+          $scoreString .=  'No points for this game yet.  Start playing to earn points';  
       }
     }
-    echo '</li></ul>'; 
   } else {
-    echo 'No points for this game yet.  Start playing to earn points and help a museum.';
+    $scoreString .=  'No points for this game yet.  Start playing to earn points and help a museum.';
   }
-  
+   
+  $scoreString .= '</li></ul>'; 
+
+  return $scoreString;
 }
 
 ?>

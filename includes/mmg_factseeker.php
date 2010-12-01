@@ -32,7 +32,7 @@ function factseeker() {
   } else { 
     // if first load - set game state how? ###
   echo '<div class="messages">';
-  echo '<p><img src="'. MMG_IMAGE_URL . 'Donald_serious.png" align="left"> "Hello, Holmes!  Thank god you\'re here - we couldn\'t solve The Case Of The Missing Records without you.  To help us solve the mystery, you\'ll need to use the clues on this page to find an interesting fact or link about this mysterious object.  You may need to hunt around for some relevant facts, but with luck and perseverance you\'ll get a promotion for your work.</p>';
+  echo '<p><img src="'. MMG_IMAGE_URL . 'Donald_serious.png" align="left"> "Hello, Holmes!  Thank god you\'re here - we couldn\'t solve The Case Of The Mystery Objects without you.  To help us work out why these objects have been left behind by the dastardly Moriarty, you\'ll need to use the clues on this page to find an interesting fact or link about this mysterious object.  You may need to hunt around for some relevant facts, but with luck and perseverance you\'ll get a promotion for your work.</p>';
   echo '<p>It\'s a while since your last case with us, so in case you need a reminder: <ul><li>use the clues available to help find an interesting fact or link about this object. If you aren\'t given enough information on the page to find something specific about this object, try to find something about the type of object or what it\'s used for instead.</li><li>report back to Headquarters with the form below."</li></ul></p>';
   //echo '<p>It\'s a while since your last case with us, so in case you need a reminder: 1. pick an object below 2) use the clues available to help find an interesting fact or link about this object 3) report back to Headquarters. With any luck you\'ll get a promotion for your work."</p>';
   echo '</div>';   
@@ -49,7 +49,7 @@ function factseeker() {
   // make a function to print the 'need another? refresh' message
 
     // get a new object
-    echo "<p>Not sure what to do with this object?  You can skip it... ";
+    echo "<p>Not sure about this object?";
     printRefresh($object_id);
     echo "</p>";
     

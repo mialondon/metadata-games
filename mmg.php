@@ -250,6 +250,8 @@ class mmgHello extends WP_Widget {
                         <?php if (!empty ($GLOBALS['my_game_code'])) {
                          drawCompletionBox($GLOBALS['my_game_code']);
                         }
+                        // experiment
+                        mmgGetRandomGamePage(); // ###
                         ?>
 		<?php echo $after_widget; ?>
 	<?php
@@ -278,6 +280,7 @@ add_action('widgets_init', create_function('', 'return register_widget("mmgHello
 /*
  * Adding login widget
  * To Do: change header message depending on whether user is logged in
+ * Picks up some of the things that Theme My Login doesn't do, like showing profile and logout link
  *
 */
 class mmgLoginWidget extends WP_Widget {
@@ -289,19 +292,20 @@ class mmgLoginWidget extends WP_Widget {
   function widget($args, $instance) {
     extract( $args );
       ?>
-	<?php echo $before_widget; ?>
+	<?php if ( is_user_logged_in() ) { // only show if the user is logged in
+        echo $before_widget; ?>
   	<?php echo $before_title;
           if (!empty($instance['title'])) {
             echo $instance['title']; // if settable by widget users
           } else {
-            echo 'Register or login to save your score';
+            echo 'Manage your account';
           }
-	echo $after_title; ?><ul>
-          <li>
-        <?php wp_register('', ''); ?></li>
-        </ul>
-		<?php echo $after_widget; ?>
-	<?php
+	echo $after_title; ?>
+        <?php  ?><ul><li>
+        <a href="<?php echo wp_logout_url( get_permalink() ); ?>" title="Logout">Logout</a>  
+        </li></ul>
+        <?php echo $after_widget; ?>
+	<?php }
   }
   
   function update($new_instance, $old_instance) {
@@ -334,7 +338,10 @@ class mmgScoreWidget extends WP_Widget {
             echo 'Your score for this game:';
           }
 	echo $after_title; ?>
-        <?php mmgGetUserScoreByGame();
+        <?php if (!empty ($GLOBALS['my_game_code'])) {
+                  $scoreString = mmgGetUserScoreByGame();
+                  echo $scoreString;
+              }
         ?>
 	  <?php echo $after_widget; ?>
 	<?php
