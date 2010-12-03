@@ -66,27 +66,27 @@ function factseeker() {
 function printFormFactSeeker($object_id)  {
   $permalink = get_permalink($id); 
 ?><div id="tfaContent"><div class="wFormContainer">
-				<h3 class="wFormTitle"><span>fact</span></h3>
+				<h3 class="wFormTitle"><span>Mystery object report</span></h3>
 		<div class="wForm wFormdefaultWidth">
   <form action="<?php echo $permalink ?>" method="post"  id="id2599208" class="labelsAbove hintsSide">
   <input type="hidden" value="<?php echo $object_id ?>" name="object_id" />
   <fieldset id="tfa_addthedetailsfor" class="wfSection">
   <legend>Add the information you've discovered to your report about this object</legend>
-  <p class="hint">The headline should 'sell' your fact. The source should provide evidence for your fact.</p>
+  <!--<p class="hint">The headline should 'sell' your fact. The source should provide evidence for your fact.</p>-->
   <div id="tfa_Headline-D" class="oneField">
   <label class="preField" for="tfa_Headline" for="fact_headline">Headline</label><br />
-  <input  id="tfa_Headline" type="text" name="fact_headline" class="fact" size="40" maxlength="100" value="" /><span class="field-hint-inactive" id="tfa_Headline-H"><span>The headline should 'sell' your fact to the reader.</span></span><br>
+  <input  id="tfa_Headline" type="text" name="fact_headline" class="fact" size="80" maxlength="100" value="" /><br /><span class="field-hint-inactive" id="tfa_Headline-H"><span>The headline should 'sell' your fact to the reader.</span></span><br /><br />
 </div>
 
 <div id="tfa_Factsummary-D" class="oneField">
-  <label class="preField" for="fact_summary">Fact summary</label>
-  <textarea name="fact_summary" cols="40" rows="5" id="tfa_Factsummary"></textarea>
-<span class="field-hint-inactive" id="tfa_Factsummary-H"><span>Summarise your fact in your own words (short quotes are ok).</span></span><br>
+  <label class="preField" for="fact_summary">Fact summary</label><br />
+  <textarea name="fact_summary" cols="75" rows="4" id="tfa_Factsummary"></textarea>
+<br /><span class="field-hint-inactive" id="tfa_Factsummary-H"><span>Summarise your fact in your own words (short quotes are ok).</span></span><br /><br />
 </div>
   
   <div id="tfa_Source-D" class="oneField">
-  <label class="preField" for="fact_source">Source</label>
-  <input id="tfa_Source"  type="text" name="fact_source" class="fact" size="40" maxlength="300" value="" /><span class="field-hint" id="tfa_Source-H"><span>The link, book or person who provided the original source.</span></span><br>
+  <label class="preField" for="fact_source">Source</label><br />
+  <input id="tfa_Source"  type="text" name="fact_source" class="fact" size="80" maxlength="300" value="" /><br /><span class="field-hint" id="tfa_Source-H"><span>The link, book or person who provided the original source.</span></span><br /><br />
 </div>
 </fieldset>
   

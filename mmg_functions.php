@@ -55,7 +55,8 @@ function printObject() {
        $object_print_string = '<h2 class="objectname">'.urldecode($turn_object->name).'</h2>';
     } else {
       // use the description instead
-      $object_print_string = '<p class="objectdescription">'.urldecode($turn_object->description).'</p>';
+      $object_print_string = '<h2 class="noobjectname">[untitled]</h2>';
+      $object_print_string .= '<p class="objectdescription">'.urldecode($turn_object->description).'</p>';
     }
     
     // ### add test for date and place not being null and add commas appropriately
@@ -103,7 +104,7 @@ function printObjectBookmark($object_id) {
   //$temp_object_id = checkForParams();
   list($temp_object_id, $skipped_ID) = checkForParams();  
   
-    echo "<p>Tip: want more time to think about it and come back to this object later?  Save this URL: ";
+    echo '<p class="saveurl">Tip: copy this URL to come back later if you want more time to think or research: ';
     if (!empty($temp_object_id)) { // if the page had loaded a requested object successfully, print that URL
       echo '<a href="'.curPageURL().'">'.curPageURL().'</a>'; // since this includes the params we only want this if the query is known to be successful
     } else { // get random object
@@ -558,6 +559,41 @@ function mmgGetUserScoreByGame() {
   $scoreString .= '</li></ul>'; 
 
   return $scoreString;
+}
+
+/*
+ * when a user registers, save the points they've earned in that session (by session id).
+ * Check that their points haven't already been saved; add them if not and update marker
+ *
+ * @uses $wpdb, $current_user
+ */
+function mmgSaveNewUserPoints() {
+  
+  global $wpdb;
+  global $current_user;
+  $session_id = ($_COOKIE['PHPSESSID']);
+
+  // check that we haven't registered their score already by testing cubepoints score
+  $current_user_score = (int) cp_displayPoints($current_user->ID, 1, 0);
+  echo gettype($current_user_score);
+  echo $current_user_score;
+    if ($current_user_score <= 0) { // shouldn't that test be the other way around?
+      echo $current_user_score . 'wtf?';
+  
+    // get their total score from the turns table
+    $sql = "SELECT sum(turn_score) as player_score FROM wp_mmg_turns WHERE session_id = '". $session_id ."' ";
+  
+    $results = $wpdb->get_row ($wpdb->prepare ($sql));
+  
+    if(is_object($results)) {
+      $score = $results->player_score;
+      //echo '<h1> $score = ' . $score . '.</h1>';
+      if ($score > 0) {
+        cp_alterPoints(cp_currentUser(), $score); // they're not logged in, they've only just registered!
+      } // else sql returned results row but no points for that game. 
+    }
+  }
+
 }
 
 ?>

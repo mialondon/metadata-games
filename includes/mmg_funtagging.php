@@ -22,8 +22,12 @@
  
 function funtagging() {
   
-  list($object_id, $object_print_string) = printObject();
+  // check to see if there's a logged in user and add their points if not already saved
+  if ( is_user_logged_in() ) {
+    mmgSaveNewUserPoints();
+  }  
   
+  list($object_id, $object_print_string) = printObject();
   
   // deal with submitted data, if any
   if($_POST['submitTags'] == "Tag!") {

@@ -184,6 +184,12 @@ function mmg_setting_game_length() {
 
 /////////// set up shortcode
 // Sample: [mmgame gametype=simpletagging]
+/*
+ *
+ * Not sure if I should include mmgSaveNewUserPoints() here but as it's called each time there's
+ * a shortcode (ie we're on a game page), maybe it's the best place for it
+ * 
+ */
 function gameShortCode($atts, $content=null) {
   
   if(@is_file(ABSPATH.'/wp-content/plugins/mmg/mmg_functions.php')) {
@@ -251,7 +257,7 @@ class mmgHello extends WP_Widget {
                          drawCompletionBox($GLOBALS['my_game_code']);
                         }
                         // experiment
-                        mmgGetRandomGamePage(); // ###
+                        //mmgGetRandomGamePage(); // ###
                         ?>
 		<?php echo $after_widget; ?>
 	<?php
@@ -353,4 +359,5 @@ class mmgScoreWidget extends WP_Widget {
 
 }
 
-add_action('widgets_init', create_function('', 'return register_widget("mmgScoreWidget");'));?>
+add_action('widgets_init', create_function('', 'return register_widget("mmgScoreWidget");'));
+?>
