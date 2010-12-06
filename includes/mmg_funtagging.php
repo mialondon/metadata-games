@@ -35,8 +35,8 @@ function funtagging() {
   } else { 
     // if first load - set game state how? ###
    echo '<div class="messages">';
-   echo '<p><img src="'. MMG_IMAGE_URL . 'Dora_pensive.png" align="left"> "The disk drive containing most of the information we need to put our collections online has disappeared... Can you help us re-label some of our objects?</p>';
-   echo '<p>Quick - add some words to describe this object using words that would help someone find it on Google."</p>';
+   echo '<p><img src="'. MMG_IMAGE_URL . 'Dora_pensive.png" align="left"> "The disk drive containing information we need to put our collections online has disappeared... Can you help us re-label some of our objects?</p>';
+   echo '<p>Quick! Add words to describe this object that would help someone find it on Google."</p>';
    echo '</div>';   
   }
   
@@ -56,7 +56,8 @@ function funtagging() {
   printObjectBookmark($object_id);
   
   echo '</div>'; // end of game-specific div
-    
+  
+  // why on earth is this here? ###
   extract(shortcode_atts(array( // lowercase cos the short tags are, elsewhere camel.
   "gametype" => 'simpletagging' // default
   ), $atts));
@@ -79,12 +80,13 @@ $permalink = get_permalink($id);
   <form action="<?php echo $permalink ?>" method="post">
   <input type="hidden" value="<?php echo $object_id ?>" name="object_id" />
   <fieldset>
-  <legend>Add words to describe this object</legend>
+  <legend>Add 'tags' to describe this object</legend>
   <label class="preField" for="tags">Tags</label>
   <input type="text" name="tags" class="tags" size="60" maxlength="300" value="" />
+   <p class="hint">Tip: separate each tag with a comma, like this: tag, label, words to describe things, name.</p> 
   <p class="submit"><input class="button" name="submitTags" type="submit" value="Tag!" /></p>
   <!--<span class="field-hint-inactive" id="tfa_tags-H"><span>Tip: separate each tag with a comma, like this: tag, label, words to describe things, name.</span></span>-->
-  <p class="hint">Tip: separate each tag with a comma, like this: tag, label, words to describe things, name.</p>
+
   </fieldset>
   </form>
   

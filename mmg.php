@@ -204,7 +204,9 @@ function gameShortCode($atts, $content=null) {
   } elseif ($gametype == 'funtagging') {
     funtagging();
   } elseif ($gametype == 'factseeker') {
-    factseeker(); 
+    factseeker();
+  } elseif ($gametype == 'objectugcreport') {
+    mmgListObjectUGC(); 
   } else {
     // simple tag game as default
     simpleTagging();
@@ -347,6 +349,9 @@ class mmgScoreWidget extends WP_Widget {
         <?php if (!empty ($GLOBALS['my_game_code'])) {
                   $scoreString = mmgGetUserScoreByGame();
                   echo $scoreString;
+              }
+              if (!is_user_logged_in() ) {
+                echo 'Login or register to save your points';
               }
         ?>
 	  <?php echo $after_widget; ?>

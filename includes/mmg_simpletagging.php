@@ -46,9 +46,6 @@ function simpleTagging() {
     echo "</p>";
     
     echo '</div>'; 
-    
-    // temp proof-of-concept
-    mmgSiteStats();
 
 }
 

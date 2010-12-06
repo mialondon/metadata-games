@@ -24,7 +24,7 @@
 function printObject() {
 
   //$temp_object_id = checkForParams(); // check to see if an object ID has been supplied
-  list($object_id, $skipped_ID) = checkForParams();
+  list($temp_object_id, $skipped_ID) = checkForParams();
   
   // do the check here for whether they've skipped an object
   if (!empty($skipped_ID)) { 
@@ -169,10 +169,9 @@ function curPageURL() {
  return $pageURL;
 }
 
-/* quite possibly a mess
- *
+/*
+ * quite possibly a mess and not used yet
  */
-
 function mmgGetRandomGamePage() {
 	//$pages = &get_pages(); // get only game pages ###
 	//$pageInd = rand(0, count($pages) - 1);
@@ -339,7 +338,7 @@ function drawCompletionBox($game_code) {
     foreach ($results as $result) {
       echo '<td>';
       // echo $result->object_id; // should update view to get object title for alt text/title tip
-      echo '<img class="widget_thumbnail" src="'. urldecode($result->image_url) .'" width="40" />';
+      echo '<img class="widget_thumbnail" src="'. urldecode($result->image_url) .'" width="35" />';
       echo "</td>";
       if ($i % 5 == 0) {
         echo '</tr><tr>';
@@ -475,6 +474,10 @@ function saveTagsWithScores($turn_id) {
   $object_id = $wpdb->prepare($_POST['object_id'] );  
     
   // find out how many tags submitted (for the score)
+  // remove extra , from the end first
+  $tags = rtrim($tags, " ,");
+  $tags = ltrim($tags, " ,");
+  if (!empty($tags)) {
   $tag_array = explode(",",$tags);
   $count=count($tag_array);
   
@@ -505,6 +508,10 @@ function saveTagsWithScores($turn_id) {
   // turns table. I can bulk add their scores when they join)
   // not sure about relying so directly on someone else's plugin, maybe move this into a separate file and keep the local points option? ###
   cp_alterPoints( cp_currentUser(), $score); // this is doubling up, but just for now ###
+  } else {
+    echo '<p class="messages"><img src="'. MMG_IMAGE_URL . 'Dora_umwhat.png" align="left"> "Whoops! Did I miss them, or did you forget to add tags?"</p>';
+  }
+  
 }
 
 /*
@@ -532,16 +539,25 @@ function mmgUpdateSkipped($skipped_ID) {
 }
 
 
-/* add function documentation ### */
+/* add function documentation ###
+ * needs to be updated to get scores by username or session id ###
+ * ie if user is logged in then by username otherwise by session with message to sign up
+ *
+ * @uses $wpdb, $current_user;
+*/
 function mmgGetUserScoreByGame() {
   $scoreString = '<ul><li>'; 
  
   if (!empty ($GLOBALS['my_game_code'])) {
     global $wpdb;
+    global $current_user;
   
     // number of objects tagged
-    $sql = "SELECT sum(turn_score) as player_score FROM wp_mmg_turns WHERE game_code = '".$GLOBALS['my_game_code']."' AND session_id = '". ($_COOKIE['PHPSESSID']) ."' ";
-    //SELECT count(DISTINCT object_id) AS num_objects FROM '. table_prefix.'turns ';
+    if (!is_user_logged_in() ) {
+      $sql = "SELECT sum(turn_score) as player_score FROM ". table_prefix."turns WHERE game_code = '".$GLOBALS['my_game_code']."' AND session_id = '". ($_COOKIE['PHPSESSID']) ."' ";
+    } else {
+      $sql = "SELECT sum(turn_score) as player_score FROM ". table_prefix."turns WHERE game_code = '".$GLOBALS['my_game_code']."' AND wp_username = '". $current_user->user_login ."' ";  
+    }
   
     $results = $wpdb->get_row ($wpdb->prepare ($sql));
 
@@ -552,7 +568,7 @@ function mmgGetUserScoreByGame() {
           $scoreString .=  'No points for this game yet.  Start playing to earn points';  
       }
     }
-  } else {
+  } else { // might not be a game page? ###
     $scoreString .=  'No points for this game yet.  Start playing to earn points and help a museum.';
   }
    
@@ -564,6 +580,7 @@ function mmgGetUserScoreByGame() {
 /*
  * when a user registers, save the points they've earned in that session (by session id).
  * Check that their points haven't already been saved; add them if not and update marker
+ * Go back and update their previous rows with their username
  *
  * @uses $wpdb, $current_user
  */
@@ -572,17 +589,17 @@ function mmgSaveNewUserPoints() {
   global $wpdb;
   global $current_user;
   $session_id = ($_COOKIE['PHPSESSID']);
+  
+  // update their previous turn rows now that they have a username
+    $wpdb->query( $wpdb->prepare( "UPDATE ". table_prefix."turns SET wp_username = '" .$current_user->user_login . "' WHERE session_id = '". $session_id ."' "
+    ) );  
 
   // check that we haven't registered their score already by testing cubepoints score
   $current_user_score = (int) cp_displayPoints($current_user->ID, 1, 0);
-  echo gettype($current_user_score);
-  echo $current_user_score;
-    if ($current_user_score <= 0) { // shouldn't that test be the other way around?
-      echo $current_user_score . 'wtf?';
+    if ($current_user_score <= 0) { // no points recorded in cubepoints yet
   
     // get their total score from the turns table
-    $sql = "SELECT sum(turn_score) as player_score FROM wp_mmg_turns WHERE session_id = '". $session_id ."' ";
-  
+    $sql = "SELECT sum(turn_score) as player_score FROM ". table_prefix."turns WHERE session_id = '". $session_id ."' ";
     $results = $wpdb->get_row ($wpdb->prepare ($sql));
   
     if(is_object($results)) {

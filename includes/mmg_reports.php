@@ -28,4 +28,45 @@ function mmgSiteStats() {
   } 
   
 }
+
+// for any object ID (internal ID at first then maybe accession number...)
+/*
+ * Uses obj_ID param as added for obj bookmark
+ */
+function mmgListObjectUGC() {
+  
+  global $wp_query;
+  global $wpdb;
+  
+  if (isset($wp_query->query_vars['obj_ID'])) {
+    // sanitise the input? ###
+    $obj_id = $wp_query->query_vars['obj_ID'];
+    
+    // print the object to the screen
+    list($object_id, $object_print_string) = printObject();
+    echo $object_print_string;
+  
+  //$wpdb->show_errors(); // harumph ###
+  
+    // get UGC
+    $sql = "SELECT * FROM ". table_prefix."turns WHERE object_id = '" . $obj_id . "' ";
+    echo $sql;
+    $results = $wpdb->get_results($wpdb->prepare($sql)); 
+
+  //var_dump($results); // also harumph ###
+
+    if($results) { // is array, not object
+      echo 'So far ' . count($results) . ' turns have added content about this object.';
+    } else {
+      echo 'No player content for this object yet.';
+    }
+
+    
+  } else {
+    echo '<p>No ID given; print a list instead</p>';
+  }
+  
+}
+
  
+?>
