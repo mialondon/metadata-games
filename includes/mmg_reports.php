@@ -66,7 +66,11 @@ function mmgListObjectUGC() {
   } else {
     echo '<p>No ID given; print a list instead</p>';
     $sql = "SELECT count( object_id ) AS numUGC, object_id FROM ". table_prefix."turns GROUP BY object_id ORDER BY numUGC DESC";
-    $results = $wpdb->get_results($wpdb->prepare($sql)); 
+    $results = $wpdb->get_results($wpdb->prepare($sql));
+    
+    foreach ($results as $result) {
+      echo '<p>'.$result->object_id.' has '.$result->numUGC .'</p>';
+    }
   }
   
 }
