@@ -69,7 +69,7 @@ function mmgListObjectUGC() {
     $results = $wpdb->get_results($wpdb->prepare($sql));
     
     foreach ($results as $result) {
-      echo '<p>'.$result->object_id.' has '.$result->numUGC .'</p>';
+      echo '<p><a href="?obj_ID='.$result->object_id.'">'.$result->object_id.'</a> has '.$result->numUGC .'</p>';
     }
   }
   
