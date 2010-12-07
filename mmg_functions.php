@@ -588,7 +588,7 @@ function mmgUpdateSkipped($skipped_ID) {
  * @uses $wpdb, $current_user;
 */
 function mmgGetUserScoreByGame() {
-  $scoreString = '<ul><li>'; 
+  $scoreString = '<ul>'; 
  
   if (!empty ($GLOBALS['my_game_code'])) {
     global $wpdb;
@@ -605,13 +605,13 @@ function mmgGetUserScoreByGame() {
 
     if(is_object($results)) {
       if ($results->player_score > 0) {
-          $scoreString .=  $results->player_score . ' points.';
+          $scoreString .= '<li class="mmg_score">' . $results->player_score . ' points.';
       } else { // sql returned results row but no points for that game
-          $scoreString .=  'No points for this game yet.  Start playing to earn points';  
+          $scoreString .=  '<li>No points for this game yet.  Start playing to earn points';  
       }
     }
   } else { // might not be a game page? ###
-    $scoreString .=  'No points for this game yet.  Start playing to earn points and help a museum.';
+    $scoreString .=  '<li>No points for this game yet.  Start playing to earn points and help a museum.';
   }
    
   $scoreString .= '</li></ul>'; 
