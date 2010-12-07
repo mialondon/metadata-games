@@ -50,7 +50,7 @@ function funtagging() {
   // get a new object
     echo "<p>Not sure about this object?";
   printRefresh($object_id);
-  echo "</p>";
+  echo " (It won't affect your points.)</p>";
   
   // make a function to deal with printing to the screen if obj not found
   printObjectBookmark($object_id);

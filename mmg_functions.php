@@ -149,7 +149,7 @@ function printRefresh($temp_object_id) {
  // $temp_object_id = checkForParams();
 
   $permalink = get_permalink( $id );
-  echo ' <a href="'.$permalink.'?skipped_ID='.$temp_object_id.'">Skip this object.</a>';
+  echo ' <a href="'.$permalink.'?skipped_ID='.$temp_object_id.'">Get a different object.</a>';
 }
 
 /*
@@ -346,7 +346,7 @@ function drawCompletionBox($game_code) {
       $i++;
     }
     while ($tc > 0) { // fill empty cells with '?' to encourage filling
-      echo '<td><span class="next_box">?</span></td>';
+      echo '<td><span class="next_box">'.$tc.'</span></td>';
       $tc = $tc-1;
     }
     echo '</tr></table>';
@@ -439,9 +439,7 @@ function saveFact($turn_id) {
 function saveFactWithScores($turn_id) {
     // do stuff
   global $wpdb;
-  
-  $score = 250; // 250 points per fact for now ### make a config setting
-    
+     
   $tags = $wpdb->prepare($_POST['tags'] );
   $object_id = $wpdb->prepare($_POST['object_id'] );
   $fact_headline = $wpdb->prepare($_POST['fact_headline'] );
@@ -459,11 +457,11 @@ function saveFactWithScores($turn_id) {
   // update the turn table with their score
   $wpdb->query( $wpdb->prepare( "
   UPDATE ". table_prefix."turns
-  SET turn_score = " . $score . "
+  SET turn_score = " . FACTSCORE . "
   WHERE turn_id = " . $turn_id . " "
   ) );   
     
-    cp_alterPoints( cp_currentUser(), $score); 
+    cp_alterPoints( cp_currentUser(), FACTSCORE); 
      
 }
 
@@ -481,11 +479,55 @@ function saveTagsWithScores($turn_id) {
   $tag_array = explode(",",$tags);
   $count=count($tag_array);
   
-  // score is currently 5 points per tag.
-  $score = $count * 5;  
+  $score = $count * TAGSCORE;
   
+  // get how many turns they've had in this session
+  $sql = "SELECT count(session_id) as num_turns FROM ". table_prefix."turns WHERE session_id = '". ($_COOKIE['PHPSESSID']) ."' ";
+    $results = $wpdb->get_row ($wpdb->prepare ($sql));
+  
+    if(is_object($results)) {
+      $num_turns = $results->num_turns;
+    }
+  
+  $img_src = '<img src="'. MMG_IMAGE_URL;
+  if ($score >= 40) {
+    $img_src .= 'Dora_happy.png"'; // wow!
+  } else {
+    $img_src .= 'Dora_talking.png"'; // well done
+  }
+  $img_src .= ' align="left">';
+  
+  $message = '<p class="messages">' .$img_src;
+if ($score >= 40) {
+    $message .= ' <strong>Wow!</strong>';
+  } elseif ($score < 40 && $score >= 20) {
+    $message .= ' <strong>Well done!</strong> ';    
+  } else {
+    $message .=  ' <strong>Thank you!</strong>  You\'ve earned a hint - try variations on words to describe the date or place, or perhaps the colours and materials of the object. ';
+  }
+
   // make variant thank you messages, depending on count/random ###
-  echo '<p class="messages"><img src="'. MMG_IMAGE_URL . 'Dora_talking.png" align="left"> "Thank you! You added ' . $count . ' tags and you scored <strong>' . $score . '</strong> points.  I\'ve added your object to your stash. Can you tag this object too?"</p>';
+  if ($num_turns == 1) { // first entry
+    $message .= ' What a great start. Can you tag another? '; 
+  } 
+  if ($num_turns == 5 ) { // wow, you collected a whole row!
+    $message .= ' You filled a whole row! ';
+  }
+  if ($num_turns % 2 == 0 ) { // random message
+    $message .= " Don't forget, everyday language is just what we need to help other visitors find these objects. ";
+  }
+  if ($num_turns % 3 == 0 && $num_turns % 2 != 0 ) { // random message
+    $message .= ' Can you tag five objects to fill a row?  ';
+  }
+  if ($num_turns % 11 == 0 ) { // random message
+    $message .= ' Every tag helps. ';
+  } 
+  
+// ### grammar for one tag
+  $message .=  ' You added ' . $count . ' tags and you scored <strong>' . $score . '</strong> points.  I\'ve added your object to your collection over on the right."</p>'; // ### you have x objects
+  
+  
+  echo $message;
   
   // for each comma-separated tag, add a row to the tags table
   for($i=0;$i<$count;$i++)

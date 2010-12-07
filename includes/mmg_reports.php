@@ -50,13 +50,14 @@ function mmgListObjectUGC() {
   
     // get UGC
     $sql = "SELECT * FROM ". table_prefix."turns WHERE object_id = '" . $obj_id . "' ";
-    echo $sql;
+    //echo $sql;
     $results = $wpdb->get_results($wpdb->prepare($sql)); 
 
   //var_dump($results); // also harumph ###
 
     if($results) { // is array, not object
       echo 'So far ' . count($results) . ' turns have added content about this object.';
+      // if object exists in turns, get data from each table with related data by game type
     } else {
       echo 'No player content for this object yet.';
     }
@@ -64,6 +65,8 @@ function mmgListObjectUGC() {
     
   } else {
     echo '<p>No ID given; print a list instead</p>';
+    $sql = "SELECT count( object_id ) AS numUGC, object_id FROM ". table_prefix."turns GROUP BY object_id ORDER BY numUGC DESC";
+    $results = $wpdb->get_results($wpdb->prepare($sql)); 
   }
   
 }

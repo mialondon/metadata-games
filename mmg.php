@@ -45,7 +45,9 @@ require_once(dirname(__FILE__) . "/includes/mmg_reports.php");
 require_once(dirname(__FILE__) . "/includes/mmg_widgets.php");
 
 define('MMG_IMAGE_URL',  WP_CONTENT_URL.'/plugins/'. basename(dirname(__FILE__)) . '/includes/images/');
-define('MMG_PLUGIN_URL',  WP_PLUGIN_URL.'/includes/'. basename(dirname(__FILE__))); // echo this to check it
+define('MMG_PLUGIN_URL',  WP_PLUGIN_URL.'/includes/'. basename(dirname(__FILE__)));
+define("FACTSCORE", "250");
+define("TAGSCORE", "5");
 
 //$wp_wall_plugin_url =  trailingslashit( WP_PLUGIN_URL.'/'. dirname( plugin_basename(__FILE__) );
 

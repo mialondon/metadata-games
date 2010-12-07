@@ -28,12 +28,17 @@ function factseeker() {
   if($_POST['submitTags'] == "Save your report") {
     saveTurn('factseeker');
   // make variant thank you messages, depending on count/random ###
-  echo '<div class="messages"><p><img src="'. MMG_IMAGE_URL . 'Donald_talking.png" align="left"> "Thank you! The object you investigated has been added to your case file and you have been awarded ' . $score . ' points towards your next promotion. Can you tag this object too?"</p></div>';
+  echo '<div class="messages"><p><img src="'. MMG_IMAGE_URL . 'Donald_talking.png" align="left"> "Thank you! The object you investigated has been added to your case file and you have been awarded <strong>' . FACTSCORE . '</strong> points towards your next promotion. Can you investigate this object too?  If you\'re not sure about it, that\'s ok... ';
+  printRefresh($object_id);
+  echo '"</p></div>';
   } else { 
     // if first load - set game state how? ###
   echo '<div class="messages">';
   echo '<p><img src="'. MMG_IMAGE_URL . 'Donald_serious.png" align="left"> "Hello, Holmes!  Thank goodness you\'re here!</p><p>Can you help us solve The Case Of The Mystery Objects?  The dastardly Moriarty has left behind these objects, but we don\'t know why. Can you <strong>use the information on this page to find an interesting fact or link about this mysterious object</strong>?</p>';
   echo '<p>You may need to hunt around for some relevant facts - try searching books or the internet. Then <strong>report back</strong> to Headquarters by filling in the form below.  If you succeed, you\'ll eventually get a promotion for your hard work!</p><p>If it\'s been a while since your last case with us, here\'s a hint to get you going: if you can\'t find anything specific about this object, try to find something about the type of object or what it\'s used for instead.</p>';
+  echo "<p>Not sure you can ferret out a fact about this object?";
+  printRefresh($object_id);
+  echo "</p>";
   //echo '<p>It\'s a while since your last case with us, so in case you need a reminder: 1. pick an object below 2) use the clues available to help find an interesting fact or link about this object 3) report back to Headquarters. With any luck you\'ll get a promotion for your work."</p>';
   echo '</div>';   
   }
@@ -45,15 +50,8 @@ function factseeker() {
     
   // call the form, give it the object_id for hidden field
   printFormFactSeeker($object_id);
-      
-  // make a function to print the 'need another? refresh' message
-
-    // get a new object
-    echo "<p>Not sure about this object?";
-    printRefresh($object_id);
-    echo "</p>";
-    
-    echo '</div>'; 
+  
+  echo '</div>'; 
 
 }
 
