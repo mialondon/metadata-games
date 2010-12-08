@@ -498,19 +498,21 @@ function saveTagsWithScores($turn_id) {
   $img_src .= ' align="left">';
   
   $message = '<p class="messages">' .$img_src;
-if ($score >= 40) {
+  if ($score >= 40) {
     $message .= ' <strong>Wow!</strong>';
   } elseif ($score < 40 && $score >= 20) {
     $message .= ' <strong>Well done!</strong> ';    
-  } else {
+  } elseif ($score < 20 && $score > 5) {
     $message .=  ' <strong>Thank you!</strong>  You\'ve earned a hint - try variations on words to describe the date or place, or perhaps the colours and materials of the object. ';
+  } else { // score = 5 - one tag.
+    $message .=  ' <strong>Thank you!</strong>  But you only entered one tag - did you definitely put commas between your tags?  (Like this: one, two, three). You\'ve earned a hint - try variations on words to describe the date or place, or perhaps the colours and materials of the object. ';
   }
 
   // make variant thank you messages, depending on count/random ###
   if ($num_turns == 1) { // first entry
     $message .= ' What a great start. Can you tag another? '; 
   } 
-  if ($num_turns == 5 ) { // wow, you collected a whole row!
+  if ($num_turns  % 5 == 0 ) { // wow, you collected a whole row!
     $message .= ' You filled a whole row! ';
   }
   if ($num_turns % 2 == 0 ) { // random message
@@ -519,6 +521,9 @@ if ($score >= 40) {
   if ($num_turns % 3 == 0 && $num_turns % 2 != 0 ) { // random message
     $message .= ' Can you tag five objects to fill a row?  ';
   }
+  if ($num_turns % 6 == 0 ) { // random message
+    $message .= ' Why not share this game with your friends?  (Or are you scared they might beat your score?) ';
+  } 
   if ($num_turns % 11 == 0 ) { // random message
     $message .= ' Every tag helps. ';
   } 
