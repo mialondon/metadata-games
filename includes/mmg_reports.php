@@ -55,26 +55,18 @@ function mmgListObjectUGC() {
       echo '<p>So far ' . count($results) . ' turns have added content about this object.</p>';
       // if object exists in turns, get data from each table with related data by game type
       // get tags
-      $tagssql = "SELECT ". table_prefix."turns.*, ". table_prefix."turn_tags.tag FROM ". table_prefix."turns JOIN ". table_prefix."turn_tags ";
-      $tagssql .= " WHERE ". table_prefix."turns.turn_id = ". table_prefix."turn_tags.turn_id AND ". table_prefix."turns.object_id = '" . $obj_id . "' ";
-      //echo $tagssql;
-      $tagresults = $wpdb->get_results($wpdb->prepare($tagssql));
       echo '<div class="ugctags"><h3>Tags</h3><p>';
-      foreach ($tagresults as $tagresult) {
-        echo ' ' . $tagresult->tag . ', ';
-      }
+      $tag_string = mmgPrintUGCTags($obj_id);
+      //$tag_string = rtrim($tag_string, ','); // doesn't work?
+      echo $tag_string;
       echo '</p></div>';
     
       // get facts
-      $factssql = "SELECT ". table_prefix."turns.*, ". table_prefix."turn_facts.fact_headline, ". table_prefix."turn_facts.fact_summary, ". table_prefix."turn_facts.fact_source FROM ". table_prefix."turns JOIN ". table_prefix."turn_facts ";
-      $factssql .= " WHERE ". table_prefix."turns.turn_id = ". table_prefix."turn_facts.turn_id AND ". table_prefix."turns.object_id = '" . $obj_id . "' ";
-      //echo $factssql;
-      $factresults = $wpdb->get_results($wpdb->prepare($factssql));
-      // print facts
-      foreach ($factresults as $factresult) {
-        echo '<div class="ugcfact"><h3>Headline: ' . $factresult->fact_headline . '</h3><p>Summary: ' . urldecode($factresult->fact_summary) . '<br />Source: ' . $factresult->fact_source . '</p></div>';
-      }
-      // ### add links to add your own tags or facts - but does it depend on the game page slug?  Hmm.
+      echo '<div class="ugcfact">';
+      $fact_string = mmgPrintUGCFacts($obj_id);
+      echo $fact_string;
+      echo '</div>';
+      // ### add links to add your own tags or facts with URLs based on config settings
     
       
     } else {
@@ -94,5 +86,47 @@ function mmgListObjectUGC() {
   
 }
 
- 
+function mmgPrintUGCFacts($object_id) {
+  $fact_string;
+  
+  global $wpdb;
+  
+  // get facts
+  $factssql = "SELECT ". table_prefix."turns.*, ". table_prefix."turn_facts.fact_headline, ". table_prefix."turn_facts.fact_summary, ". table_prefix."turn_facts.fact_source FROM ". table_prefix."turns JOIN ". table_prefix."turn_facts ";
+  $factssql .= " WHERE ". table_prefix."turns.turn_id = ". table_prefix."turn_facts.turn_id AND ". table_prefix."turns.object_id = '" . $object_id . "' ";
+  //echo $factssql;
+  $factresults = $wpdb->get_results($wpdb->prepare($factssql));
+  // print facts
+  if($factresults) { // is array, not object
+    foreach ($factresults as $factresult) {
+      $fact_string .= '<h3>Headline: ' . $factresult->fact_headline . '</h3><p>Summary: ' . urldecode($factresult->fact_summary) . '<br />Source: ' . $factresult->fact_source . '</p>';
+    }
+  } else {
+    $fact_string = '';
+  }
+  
+  return $fact_string;
+   
+}
+
+function mmgPrintUGCTags($object_id) {
+  
+  $tag_string;
+  global $wpdb;
+  
+  // get tags
+  $tagssql = "SELECT ". table_prefix."turns.*, ". table_prefix."turn_tags.tag FROM ". table_prefix."turns JOIN ". table_prefix."turn_tags ";
+  $tagssql .= " WHERE ". table_prefix."turns.turn_id = ". table_prefix."turn_tags.turn_id AND ". table_prefix."turns.object_id = '" . $object_id . "' ";
+  //echo $tagssql;
+  $tagresults = $wpdb->get_results($wpdb->prepare($tagssql));
+  if($tagresults) { // is array, not object  
+    foreach ($tagresults as $tagresult) {
+      $tag_string .= ' ' . $tagresult->tag . ', ';
+    }
+  } else {
+      $tag_string = '';
+  }
+  
+  return $tag_string;
+}
 ?>

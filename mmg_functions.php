@@ -62,7 +62,7 @@ function printObject() {
     // ### add test for date and place not being null and add commas appropriately
     $object_print_string .= '<p class="source">';
     if ($source_display_url != '') {
-      $object_print_string .= 'View <a href="'.$source_display_url.'">object on the '.$institution.' site</a>.';
+      $object_print_string .= 'View <a href="'.$source_display_url.'" target="_blank">object on the '.$institution.' site</a> (opens in new window).';
     } else {
       $object_print_string .= 'Object from: '.$institution.'.';
     }
@@ -491,32 +491,48 @@ function saveTagsWithScores($turn_id) {
   
   $img_src = '<img src="'. MMG_IMAGE_URL;
   if ($score >= 40) {
-    $img_src .= 'Dora_happy.png"'; // wow!
+    $img_src .= 'Dora_happy.gif"'; // wow!
   } else {
-    $img_src .= 'Dora_talking.png"'; // well done
+    $img_src .= 'Dora_talking.gif"'; // well done
   }
   $img_src .= ' align="left">';
   
-  $message = '<p class="messages">' .$img_src;
+  $message = '<div class="messages"><p>' .$img_src;
   if ($score >= 40) {
     $message .= ' <strong>Wow!</strong>';
   } elseif ($score < 40 && $score >= 20) {
     $message .= ' <strong>Well done!</strong> ';    
   } elseif ($score < 20 && $score > 5) {
-    $message .=  ' <strong>Thank you!</strong>  You\'ve earned a hint - try variations on words to describe the date or place, or perhaps the colours and materials of the object. ';
-  } else { // score = 5 - one tag.
-    $message .=  ' <strong>Thank you!</strong>  But you only entered one tag - did you definitely put commas between your tags?  (Like this: one, two, three). You\'ve earned a hint - try variations on words to describe the date or place, or perhaps the colours and materials of the object. ';
+    $message .=  ' <strong>Thank you!</strong> ';
+  } // also if one, for thank you.
+  
+  $message .=  ' You added ' . $count . ' tag';
+
+  if ($score > 4) {  // ### grammar for one tag
+     $message .=  's '; 
+  }
+  $message .=  '  and you scored <strong>' . $score . '</strong> points.  I\'ve added your object to your collection over on the right."</p><p>'; // ### you have x objects
+  
+  if ($score <= 5) { // score = 5 - one tag.
+    $message .=  ' <strong>Thank you!</strong>  But you only entered one tag - did you definitely put commas between your tags?  (Like this: one, two, three). Or try this hint - look for variations on words to describe the date or place, or perhaps the colours and materials of the object, what it would be like to use or who might have used it. ';
   }
 
   // make variant thank you messages, depending on count/random ###
+  if ($num_turns < 5 && ($score < 20 && $score > 5)) {
+    $message .= 'Don\'t forget to try variations on words to describe the dates, places, colours and materials of the thing, or perhaps relevant subjects or people. ';
+    }
+  
   if ($num_turns == 1) { // first entry
-    $message .= ' What a great start. Can you tag another? '; 
+    if ($score > 5) {
+    $message .= ' What a great start. ';
+    }
+    $message .= ' Can you tag another? '; 
   } 
-  if ($num_turns  % 5 == 0 ) { // wow, you collected a whole row!
+  if ($num_turns  % 5 == 0 ) { // wow, you collected a whole row! // this will be a 'turn'
     $message .= ' You filled a whole row! ';
   }
-  if ($num_turns % 2 == 0 ) { // random message
-    $message .= " Don't forget, everyday language is just what we need to help other visitors find these objects. ";
+  if ($num_turns == 2 ) { // random message
+    $message .= " Don't feel you have to use fancy words - everyday language is just what we need to help other visitors find these objects. ";
   }
   if ($num_turns % 3 == 0 && $num_turns % 2 != 0 ) { // random message
     $message .= ' Can you tag five objects to fill a row?  ';
@@ -526,12 +542,8 @@ function saveTagsWithScores($turn_id) {
   } 
   if ($num_turns % 11 == 0 ) { // random message
     $message .= ' Every tag helps. ';
-  } 
-  
-// ### grammar for one tag
-  $message .=  ' You added ' . $count . ' tags and you scored <strong>' . $score . '</strong> points.  I\'ve added your object to your collection over on the right."</p>'; // ### you have x objects
-  
-  
+  }  
+  $message .= '</p></div>';
   echo $message;
   
   // for each comma-separated tag, add a row to the tags table
@@ -556,7 +568,7 @@ function saveTagsWithScores($turn_id) {
   // not sure about relying so directly on someone else's plugin, maybe move this into a separate file and keep the local points option? ###
   cp_alterPoints( cp_currentUser(), $score); // this is doubling up, but just for now ###
   } else {
-    echo '<p class="messages"><img src="'. MMG_IMAGE_URL . 'Dora_umwhat.png" align="left"> "Whoops! Did I miss them, or did you forget to add tags?"</p>';
+    echo '<p class="messages"><img src="'. MMG_IMAGE_URL . 'Dora_umwhat.gif" align="left"> "Whoops! Did I miss them, or did you forget to add tags?"</p>';
   }
   
 }

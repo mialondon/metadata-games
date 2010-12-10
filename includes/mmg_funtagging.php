@@ -35,8 +35,8 @@ function funtagging() {
   } else { 
     // if first load - set game state how? ###
    echo '<div class="messages">';
-   echo '<p><img src="'. MMG_IMAGE_URL . 'Dora_pensive.png" align="left"> "The disk drive containing information we need to put our collections online has disappeared... Can you help us re-label some of our objects?</p>';
-   echo '<p>Quick! Add words to describe this object that would help someone find it on Google."</p>';
+   echo '<p><img src="'. MMG_IMAGE_URL . 'Dora_pensive.gif" align="left"> "Hi, my name is Dora, and I\'m a junior curator.  It\'s my first day and I\'ve made a big mistake - I accidentally deleted all the information we were going to add to our collections online.  I need to re-label them, and quickly...</p>';
+   echo '<p>Can you help?  <strong>Add words about the thing in the picture that would help someone find it on Google</strong> - how it looks, what does, who might have used it - anything you can think of."</p>';
    echo '</div>';   
   }
   
@@ -80,13 +80,14 @@ $permalink = get_permalink($id);
   <form action="<?php echo $permalink ?>" method="post">
   <input type="hidden" value="<?php echo $object_id ?>" name="object_id" />
   <fieldset>
-  <legend>Add 'tags' to describe this object</legend>
+  <legend>Add words ('tags') to describe this object</legend>
   <label class="preField" for="tags">Tags</label>
-  <input type="text" name="tags" class="tags" size="60" maxlength="300" value="" />
-   <p class="hint">Tip: separate each tag with a comma, like this: tag, label, words to describe things, name.</p> 
-  <p class="submit"><input class="button" name="submitTags" type="submit" value="Tag!" /></p>
-  <!--<span class="field-hint-inactive" id="tfa_tags-H"><span>Tip: separate each tag with a comma, like this: tag, label, words to describe things, name.</span></span>-->
-
+  <input type="text" name="tags" class="tags" size="60" maxlength="300" value="" /><br />
+   <span class="field-hint" id="tfa_Source-H"><span>Tip: separate each tag with a comma, like this: tag, label, words to describe things, name.</span></span>
+  <div class="actions">
+  <p class="submit"><input class="button primaryAction" name="submitTags" type="submit" value="Tag!" /></p>
+  </div> 
+  
   </fieldset>
   </form>
   
