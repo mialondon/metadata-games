@@ -124,7 +124,7 @@ function checkForParams() {
     $obj_id = $wp_query->query_vars['obj_ID'];
     //return $obj_id;
   } else {
-    unset($obj_id); // will probably kill something
+    unset($obj_id); // possibly pointless
   }
   
   if (isset($wp_query->query_vars['skipped_ID'])) {
@@ -132,7 +132,7 @@ function checkForParams() {
     $skipped_ID = $wp_query->query_vars['skipped_ID'];
     //return $skipped_ID;
   } else {
-    unset($skipped_ID); // will probably kill something
+    unset($skipped_ID); // possibly pointless
   }
   return array ($obj_id, $skipped_ID); 
   
@@ -146,8 +146,6 @@ function checkForParams() {
  */
 function printRefresh($temp_object_id) {
 
- // $temp_object_id = checkForParams();
-
   $permalink = get_permalink( $id );
   echo ' <a href="'.$permalink.'?skipped_ID='.$temp_object_id.'">Get a different object.</a>';
 }
@@ -156,6 +154,7 @@ function printRefresh($temp_object_id) {
  * get the page url (hopefully with params) to print for people to come back later
  * From http://www.webcheatsheet.com/php/get_current_page_url.php
  * Use e.g. echo curPageURL();
+ * ### Is this still used?
  */
 function curPageURL() {
  $pageURL = 'http';
@@ -210,39 +209,98 @@ function mmgGetObject($obj_id = null) {
   return $row;
 }
 
+/*
+ * Returns a 'random' object, with some caveats - it chhecks the objects table first,
+ * in case there are objects that haven't yet been shown (e.g. new objects) then
+ * selects from the least-shown objects in the objects_shown table
+ *
+ */ 
 
 // get random row from object table 
   function randomRow($table, $column) {
     //echo $table ." " . $column;
   global $wpdb;
+  $exclude_ids;
   
-  // get a random ID
-  $random_row = $wpdb->get_row ($wpdb->prepare ("SELECT $column FROM $table ORDER BY RAND(NOW()) LIMIT 1")); // ### add test that ID isn't in wp_mmg_objects_shown or is somehow less likely to be
-   
-  $random_row_id = $random_row->object_id;
+  // get objects user has already seen
+  $sql = mmgSQLObjectsByUser('');
+  //echo '<h1>from mmgsqlobjectsbyuser: '. $sql . '</h1>'; // +++
+  if (!empty($sql)) { // there's a session or username
+    $user_objects = $wpdb->get_results ($wpdb->prepare ($sql));  
+    if ($user_objects) { // if query returns results
+      foreach ($user_objects as $user_object) {
+        $exclude_ids .= $user_object->object_id.', ';
+      }
+      $exclude_ids = trim($exclude_ids, ', ');
+    } else {
+      unset($exclude_ids);
+    }    
+  } else {
+    unset($exclude_ids);
+  }  
   
-  // get the full record for that ID
-  $random_row = $wpdb->get_row ($wpdb->prepare ("SELECT * FROM $table WHERE object_id = '$random_row_id' LIMIT 1"));
+  // debugging
+  // echo '<h1>Session cookie: '. ($_COOKIE['PHPSESSID']) .'</h1>'; // +++
+
   
-  // update wp_mmg_objects_shown with the ID of that object
-  $test_id = $wpdb->get_row ($wpdb->prepare ("SELECT object_id FROM ". table_prefix."objects_shown WHERE object_id = " . $random_row_id . " "));
-  if(is_object($test_id)) {  // then update
-    $wpdb->query( $wpdb->prepare( "
-    UPDATE ". table_prefix."objects_shown
-    SET show_count = show_count+1
-    WHERE object_id = " . $test_id->object_id . " "
-    ) );  
-  } else { // insert as not already there
-    $wpdb->query( $wpdb->prepare( "
-    INSERT INTO ". table_prefix."objects_shown 
-    (object_id, show_count)
-    VALUES ( %d, %d)" ,
-    array($random_row_id, 1) ) ); 
+  // get a random ID from objects not shown table
+  $random_row_sql = "SELECT $column FROM $table WHERE object_id NOT IN (SELECT object_id FROM ". table_prefix."objects_shown) ";
+  if (!empty($exclude_ids)) { 
+    $random_row_sql .=" AND object_id NOT IN (".$exclude_ids .") ";
+  }  
+  $random_row_sql .= " ORDER BY RAND(NOW()) LIMIT 1"; // 
+  //echo $random_row_sql;
+  $random_row = $wpdb->get_row ($wpdb->prepare ($random_row_sql));
+  
+  if ($random_row) { // then object that hasn't been shown before exists
+    $random_row_id = $random_row->object_id;
+    //echo 'in object not shown before exists'; // +++
+  } else { // get object that has been shown before
+    $random_row_sql = "SELECT $column FROM ". table_prefix."objects_shown ";
+      if (!empty($exclude_ids)) { // is this the right test?  If has no data ###
+        $random_row_sql .=" WHERE object_id NOT IN (".$exclude_ids .") ";
+      }
+      $random_row_sql .= "ORDER BY show_count ASC, RAND(NOW()) LIMIT 1";
+      // echo '<h1>from $random_row_sql in objects shown before : '. $random_row_sql . '</h1>'; // +++
+      $random_row = $wpdb->get_row ($wpdb->prepare ($random_row_sql)); 
+      if ($random_row) {
+        $random_row_id = $random_row->object_id;
+      } 
+  }
+
+  if ($random_row_id < 1) { // just in case something went horribly wrong, at least don't die
+    $get_random_object_sql = "SELECT * FROM $table ORDER BY RAND(NOW()) LIMIT 1";
+  } else { // get the full record for that ID and life is good
+    $get_random_object_sql = "SELECT * FROM $table WHERE object_id = '$random_row_id' LIMIT 1";  }
+  
+  // echo $get_random_object_sql; // +++
+  
+  $random_row = $wpdb->get_row ($wpdb->prepare ($get_random_object_sql));
+  
+  if ($random_row) {
+    // update wp_mmg_objects_shown with the ID of that object
+    $test_id = $wpdb->get_row ($wpdb->prepare ("SELECT object_id FROM ". table_prefix."objects_shown WHERE object_id = " . $random_row_id . " "));
+    if(is_object($test_id)) {  // then update
+      $wpdb->query( $wpdb->prepare( "
+      UPDATE ". table_prefix."objects_shown
+      SET show_count = show_count+1
+      WHERE object_id = " . $test_id->object_id . " "
+      ) );  
+    } else { // insert as not already there
+      $wpdb->query( $wpdb->prepare( "
+      INSERT INTO ". table_prefix."objects_shown 
+      (object_id, show_count)
+      VALUES ( %d, %d)" ,
+      array($random_row_id, 1) ) ); 
+    }
+  } else { // well, gosh, we've run out of objects that you haven't seen yet
+    echo '<h1>You\'ve seen all the objects!  Use the contact form to request more - you might even get a special award for your achievements.</h1>';
+    // echo '<h1>Whoops! My bad, could you please click the link to reload the page?  Terribly sorry about that!</h1>'; // general emergency text, assuming reloading works
   }
 
   return $random_row;
 
-  }
+}
   
 /**
  * Saves their turn.  Pass turn ID onto function to save UCG.
@@ -294,6 +352,37 @@ function saveTurn($game_code) {
 
 }
 
+/*
+ * Returns the sql needed to get the objects with UGC from a particular user or session ID
+ * just to save having different versions to keep in sync
+ * Uses $game_code (optional - you may not want it for all actions).
+ * @uses $current_user;
+ */
+function mmgSQLObjectsByUser($game_code) {
+
+  global $current_user;
+  $session_stuff = ($_COOKIE['PHPSESSID']);
+    
+  // objects for this user
+  $sql = "SELECT " . table_prefix. "turns.object_id, image_url, turn_id FROM ". table_prefix. "turns, ". table_prefix. "objects WHERE ". table_prefix. "turns.object_id = ". table_prefix. "objects.object_id ";
+  
+  if ($game_code != '') {
+   $sql .= " AND game_code = '" . $game_code . "' ";
+  }
+  
+  if(is_user_logged_in()) {
+    get_currentuserinfo();
+    $sql .= " AND wp_username = '" . $current_user->user_login ."'  ORDER BY turn_id"; 
+  } elseif (!empty($session_stuff)) {  
+      $sql .= " AND session_id = '" . $session_stuff ."'  ORDER BY turn_id";
+  } else {
+    unset($sql); // function should return nothing as no username or session so no objects to get ###
+  }
+  
+  return $sql;
+  
+}
+
 /**
  * Take the object id, get the thumbnail, add it to the next free spot in the completion box
  * 
@@ -312,15 +401,7 @@ function drawCompletionBox($game_code) {
   global $current_user;
 
   // number of objects tagged
-  $sql = "SELECT " . table_prefix. "turns.object_id, image_url, turn_id FROM ". table_prefix. "turns, ". table_prefix. "objects WHERE ". table_prefix. "turns.object_id = ". table_prefix. "objects.object_id AND game_code = '" . $game_code . "' "; // does case matter for game code? ###
-  
-  if(is_user_logged_in()) {
-    get_currentuserinfo();
-    $sql = $sql . " AND wp_username = '" . $current_user->user_login ."' "; // could also use display name but KISS for now
-  } else {
-    $sql = $sql . " AND session_id = '" .   $session_id = ($_COOKIE['PHPSESSID']) ."' "; 
-  } 
-  $sql = $sql . ' ORDER BY turn_id' ;
+  $sql = mmgSQLObjectsByUser($game_code);
   
   $results = $wpdb->get_results($wpdb->prepare ($sql));
   
@@ -338,7 +419,7 @@ function drawCompletionBox($game_code) {
     foreach ($results as $result) {
       echo '<td>';
       // echo $result->object_id; // should update view to get object title for alt text/title tip
-      echo '<img class="widget_thumbnail" src="'. urldecode($result->image_url) .'" width="35" />';
+      echo '<a href="' . PATH_TO_UGCREPORTS_PAGE . '?obj_ID=' . $result->object_id .'" title="View all content added about this object"><img class="widget_thumbnail" src="'. urldecode($result->image_url) .'" width="35" /></a>';
       echo "</td>";
       if ($i % 5 == 0) {
         echo '</tr><tr>';
@@ -360,12 +441,12 @@ function drawCompletionBox($game_code) {
 
   echo '</tr></table>';
   
-    // temp proof-of-concept
+  // aww, a nice message
   mmgSiteStats();
 }
 
 /**
- * Save tags. Updating to save tags to mmg_turn_tags rather than mmg_turn.
+ * Save tags to mmg_turn_tags
  * 
  * @since 0.1
  * @uses $wpdb
@@ -474,78 +555,13 @@ function saveTagsWithScores($turn_id) {
   // find out how many tags submitted (for the score)
   // remove extra , from the end first
   $tags = rtrim($tags, " ,");
-  $tags = ltrim($tags, " ,");
+  $tags = ltrim($tags, " ,"); // hmm ###
   if (!empty($tags)) {
   $tag_array = explode(",",$tags);
   $count=count($tag_array);
   
   $score = $count * TAGSCORE;
-  
-  // get how many turns they've had in this session
-  $sql = "SELECT count(session_id) as num_turns FROM ". table_prefix."turns WHERE session_id = '". ($_COOKIE['PHPSESSID']) ."' ";
-    $results = $wpdb->get_row ($wpdb->prepare ($sql));
-  
-    if(is_object($results)) {
-      $num_turns = $results->num_turns;
-    }
-  
-  $img_src = '<img src="'. MMG_IMAGE_URL;
-  if ($score >= 40) {
-    $img_src .= 'Dora_happy.gif"'; // wow!
-  } else {
-    $img_src .= 'Dora_talking.gif"'; // well done
-  }
-  $img_src .= ' align="left">';
-  
-  $message = '<div class="messages"><p>' .$img_src;
-  if ($score >= 40) {
-    $message .= ' <strong>Wow!</strong>';
-  } elseif ($score < 40 && $score >= 20) {
-    $message .= ' <strong>Well done!</strong> ';    
-  } elseif ($score < 20 && $score > 5) {
-    $message .=  ' <strong>Thank you!</strong> ';
-  } // also if one, for thank you.
-  
-  $message .=  ' You added ' . $count . ' tag';
-
-  if ($score > 4) {  // ### grammar for one tag
-     $message .=  's '; 
-  }
-  $message .=  '  and you scored <strong>' . $score . '</strong> points.  I\'ve added your object to your collection over on the right."</p><p>'; // ### you have x objects
-  
-  if ($score <= 5) { // score = 5 - one tag.
-    $message .=  ' <strong>Thank you!</strong>  But you only entered one tag - did you definitely put commas between your tags?  (Like this: one, two, three). Or try this hint - look for variations on words to describe the date or place, or perhaps the colours and materials of the object, what it would be like to use or who might have used it. ';
-  }
-
-  // make variant thank you messages, depending on count/random ###
-  if ($num_turns < 5 && ($score < 20 && $score > 5)) {
-    $message .= 'Don\'t forget to try variations on words to describe the dates, places, colours and materials of the thing, or perhaps relevant subjects or people. ';
-    }
-  
-  if ($num_turns == 1) { // first entry
-    if ($score > 5) {
-    $message .= ' What a great start. ';
-    }
-    $message .= ' Can you tag another? '; 
-  } 
-  if ($num_turns  % 5 == 0 ) { // wow, you collected a whole row! // this will be a 'turn'
-    $message .= ' You filled a whole row! ';
-  }
-  if ($num_turns == 2 ) { // random message
-    $message .= " Don't feel you have to use fancy words - everyday language is just what we need to help other visitors find these objects. ";
-  }
-  if ($num_turns % 3 == 0 && $num_turns % 2 != 0 ) { // random message
-    $message .= ' Can you tag five objects to fill a row?  ';
-  }
-  if ($num_turns % 6 == 0 ) { // random message
-    $message .= ' Why not share this game with your friends?  (Or are you scared they might beat your score?) ';
-  } 
-  if ($num_turns % 11 == 0 ) { // random message
-    $message .= ' Every tag helps. ';
-  }  
-  $message .= '</p></div>';
-  echo $message;
-  
+   
   // for each comma-separated tag, add a row to the tags table
   for($i=0;$i<$count;$i++)
   {
@@ -553,7 +569,7 @@ function saveTagsWithScores($turn_id) {
     INSERT INTO ". table_prefix."turn_tags 
     (turn_id, object_id, tag )
     VALUES ( %d, %d, %s )" ,
-    array( $turn_id, $object_id, $tag_array[$i] ) ) ); 
+    array( $turn_id, $object_id, trim($tag_array[$i]) ) ) ); 
   }
   
   // update the turn table with their score
@@ -563,8 +579,16 @@ function saveTagsWithScores($turn_id) {
   WHERE turn_id = " . $turn_id . " "
   ) );   
   
-  // add points to the users' account (if they have one. If they don't, scores are saved in and calculated from
-  // turns table. I can bulk add their scores when they join)
+  echo '<div class="messages">';
+  $response_string = mmgGetDoraTurnMessages($score);
+  echo $response_string;
+
+  $validation_string = mmgGetDoraTurnValidation($object_id, $turn_id); 
+  echo $validation_string;  
+  
+  echo '"</div>'; // needs a full stop or not?
+  
+  // add points to the users' account (if they have one).
   // not sure about relying so directly on someone else's plugin, maybe move this into a separate file and keep the local points option? ###
   cp_alterPoints( cp_currentUser(), $score); // this is doubling up, but just for now ###
   } else {
@@ -670,6 +694,108 @@ function mmgSaveNewUserPoints() {
     }
   }
 
+}
+
+/*
+ * gets a random bunch of objects and draws up a 3x3 (?) block for object selection
+ * for e.g. Donald or all objects with UGC for reports
+ * God only knows what to do about image sizes - faking it in img tag for now (evil, sorry) ###
+ * @uses $wpdb
+ */
+function mmgDisplayObjectBlocks($callingFunction) {
+  
+  global $wpdb;
+  $object_id;
+  $i = 1;
+  
+  if ($callingFunction == 'donald') {
+    // get x random objects
+    
+    while ($i < 9) { // for 8 objects
+      if ($i % 2 == 0) { 
+        echo '<div class="child last">';
+      }
+      else {
+        echo '<div class="child">';       
+      }
+      $object_to_print = randomRow(table_prefix.'objects', 'object_id');
+      
+      if ($object_to_print) {
+        list($object_id, $object_string_to_print) = mmgPrintObjectBlock($object_to_print);
+        echo $object_string_to_print;
+      $i++; 
+      }
+
+      // link to game page - needs WP base URL? ###
+     echo '<p><a href="'. '?obj_ID=' . $object_id .'" class="playthis">Play Donald with this object.</a> ###</p>';
+     echo '</div>';    
+    }
+
+  }
+  
+  // if called for Donald, get 9 random objects - hopefully really random - it'll be a good test
+  // if called for UGC reports, get all, ordered by dates
+  
+  // for each object, call mmgPrintObjectBlock($object_id, block_type)
+  // block types are: donald, ugc report by object, ugc report by user
+  
+  // print link to appropriate place e.g. Donald game page, object UGC report, etc.
+  
+}
+
+function mmgPrintObjectBlock($my_object) {
+  
+    if(is_object($my_object)) {
+    $institution = urldecode($my_object->institution);
+    $source_display_url = urldecode($my_object->source_display_url);
+    $image_url = urldecode($my_object->image_url);
+    $interpretative_date = urldecode($my_object->interpretative_date);
+    $interpretative_place = urldecode($my_object->interpretative_place);
+    $accession_number = urldecode($my_object->accession_number);
+    $object_id = urldecode($my_object->object_id);
+    $object_name = urldecode($my_object->name);
+    $object_description = urldecode($my_object->description);
+  
+    $object_print_string;
+ 
+    // print object name
+    if ($object_name != 'None') { // Many Powerhouse objects don't have names  
+       $object_print_string = '<h3 class="objectname">'.$object_name.'</h3>';
+    } else {
+      // use the description instead
+      $object_print_string = '<h3 class="noobjectname">[untitled]</h3>';
+      $object_print_string .= '<p class="objectdescription">'.$object_description.'</p>'; // truncate after c140 characters ###
+    }
+    
+    // check size of cropped PHM images cf Science Museum ###
+    // get smaller Science Museum images for this layout
+    if ($institution == 'Science Museum') {
+      $image_url = str_replace("/Small/", "/Inline/", $image_url);
+    } 
+    $object_print_string .= '<img class="object_image" src="'. $image_url .'" />';
+    // add licence terms for Powerhouse
+    if ($institution == 'Powerhouse Museum') {
+      $object_print_string .= '<div class="object_image_credit">Thumbnails under license from Powerhouse Museum.</div>';
+    }
+
+    // ### add test for date and place not being null and add commas appropriately
+    $object_print_string .= '<p class="summary">';
+    if ($source_display_url != '') {
+      $object_print_string .= 'Object from: '.$institution.'. ';
+    }    
+    if ($interpretative_date != '') {
+      $object_print_string .= 'Date: '. $interpretative_date . '&nbsp;&nbsp;';
+    }
+    if ($interpretative_place != '') {
+      $object_print_string .= 'Place: '. $interpretative_place . '&nbsp;&nbsp;';
+    }
+    $object_print_string .= ' (Accession num: '.$accession_number.')</p>';
+  
+  } 
+  
+  return array ($object_id, $object_print_string);
+
+  
 }
 
 ?>

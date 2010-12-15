@@ -44,12 +44,19 @@ require_once(dirname(__FILE__) . "/includes/mmg_factseeker.php");
 require_once(dirname(__FILE__) . "/includes/mmg_reports.php");
 require_once(dirname(__FILE__) . "/includes/mmg_widgets.php");
 
+// these should really be made into config options ###
 define('MMG_IMAGE_URL',  WP_CONTENT_URL.'/plugins/'. basename(dirname(__FILE__)) . '/includes/images/');
 define('MMG_PLUGIN_URL',  WP_PLUGIN_URL.'/includes/'. basename(dirname(__FILE__)));
 define("FACTSCORE", "250");
 define("TAGSCORE", "5");
+define("PATH_TO_DONALD_PAGE", "/dagmar/"); // path to page with Donald game shortcode, from WordPress root
+define("PATH_TO_DORA_PAGE", "/charlie/"); // path to page with Donald game shortcode, from WordPress root
+define("PATH_TO_UGCREPORTS_PAGE", "/reports/"); // path to page with Donald game shortcode, from WordPress root
 
-//$wp_wall_plugin_url =  trailingslashit( WP_PLUGIN_URL.'/'. dirname( plugin_basename(__FILE__) );
+/* for live */
+// define("PATH_TO_DONALD_PAGE", "/donald/"); // path to page with Donald game shortcode, from WordPress root
+// define("PATH_TO_DORA_PAGE", "/dora/"); // path to page with Donald game shortcode, from WordPress root
+// define("PATH_TO_UGCREPORTS_PAGE", "/content-added-so-far/"); // path to page with Donald game shortcode, from WordPress root
 
 
 /////////// set up activation and deactivation stuff
@@ -205,8 +212,9 @@ function gameShortCode($atts, $content=null) {
     simpleFacts();
   } elseif ($gametype == 'funtagging') {
     funtagging();
-  } elseif ($gametype == 'factseeker') {
-    factseeker();
+  } elseif ($gametype == 'factseeker') { // Dec 14 - using mmgFactseekerChoice until have versions on shortcodes
+    mmgFactseekerChoice();
+    // factseeker();
   } elseif ($gametype == 'objectugcreport') {
     mmgListObjectUGC(); 
   } else {

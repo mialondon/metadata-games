@@ -23,13 +23,13 @@
 function simpleFacts() {
   
   list($object_id, $object_print_string) = printObject();
-    
+  
+  echo '<div class="simpleFacts mmgContent">';     
   // deal with submitted data, if any
   if($_POST['submitTags'] == "Add your fact") {
     saveTurn('simplefacts');
   } 
-  
-  echo '<div class="simpleFacts">'; // put a background wash on here? ###
+
   echo $object_print_string; 
   
   // call the form, give it the object_id for hidden field

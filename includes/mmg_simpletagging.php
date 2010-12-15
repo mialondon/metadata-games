@@ -24,12 +24,12 @@ function simpleTagging() {
   
   list($object_id, $object_print_string) = printObject();
   
+  echo '<div class="simpleTagging mmgContent">';  
   // deal with submitted data, if any
   if($_POST['submitTags'] == "Tag!") {
     saveTurn('simpletagging');
   } 
     
-  echo '<div class="simpleTagging">'; // put a background wash on here? ###
   echo $object_print_string; 
     
   // call the form, give it the object_id for hidden field
