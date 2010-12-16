@@ -23,19 +23,20 @@
  
 function funtagging() {
   
+  echo '<div class="funtagging mmgContent">';
+  
   // check to see if there's a logged in user and add their points if not already saved
   if ( is_user_logged_in() ) {
     mmgSaveNewUserPoints();
   }
-  
-  echo '<div class="funtagging mmgContent">';
-  
+    
   list($object_id, $object_print_string) = printObject();
   
   // deal with submitted data, if any
   if($_POST['submitTags'] == "Tag!") {
     saveTurn('funtagging');
   } else { // is first load or possibly after a skipped object ###
+   echo '<div class="funtagging mmgContent">';
    echo '<div class="messages">';
    echo '<p><img src="'. MMG_IMAGE_URL . 'Dora_pensive.gif" align="left"> "Hi, my name is Dora, and I\'m a junior curator.  It\'s my first day and I\'ve made a big mistake - I accidentally deleted all the information we were going to add to our collections online.  I need to re-label them, and quickly...</p>';
    echo '<p>Can you help?  <strong>Add words about the thing in the picture that would help someone find it on Google</strong> - how it looks, what does, who might have used it - anything you can think of."</p>';
@@ -110,14 +111,12 @@ function mmgGetDoraTurnMessages($score) {
     $num_turns = $results->num_turns;
     
     if ($num_turns % 5 == 0) { // it's a 'game'!  Woo, yeah.
-      $img_src .= 'Dora_happy.gif"'; // wow!      
-      $message = '<p class="game_completed">"<img src="' . MMG_IMAGE_URL.$img_src .' align="left">Game completed!</p>';
+      $message = '<div class="game_completed"><p class="game_completed">Hooray!  You completed a row!</p></div>';
       $game_marker_message = mmgDoraGameMarker();
       if (!empty($game_marker_message)) {
         $message .= $game_marker_message;
       }
     } else { // carry on
-  
       $img_src = '<img src="'. MMG_IMAGE_URL;
       if ($score >= 40) {
         $img_src .= 'Dora_happy.gif"'; // wow!
@@ -269,7 +268,8 @@ function mmgDoraGameMarker() {
     if ($game_results) {
       $numTags = $game_results;
       $player_average_tags = $numTags/5;
-      $message .= '<p class="game_congrats">You scored a grand total of ' . TAGSCORE * $numTags . ' points for this game. ';
+      $img_src .= 'Dora_happy.gif"'; // wow! 
+      $message .= '<p class="game_congrats"><img src="' . MMG_IMAGE_URL.$img_src .' align="left">"You scored a grand total of ' . TAGSCORE * $numTags . ' points for this game. ';
       $message .= ' On average, you added ' . $player_average_tags . ' tags for each object.';      
     }
   }
@@ -277,8 +277,12 @@ function mmgDoraGameMarker() {
   if (!empty($player_average_tags)) {
   $site_average = mmgGetSiteTaggingAverages();
   
-  if ($player_average_tags > $site_average) {
-    $message .= ' You\'re beating the game average ('.$site_average.'), go you! Are you ready to play again?';        
+  if ($player_average_tags >= ($site_average+1)) { // 2 above average
+    $message .= ' You\'re a super tagger!  You\'re smashing the game average ('.$site_average.'), go you! Are you ready to play again and keep your lead?';    
+  } elseif ($player_average_tags > ($site_average)) { // 1 above average
+    $message .= ' You\'re beating the game average ('.$site_average.'), go you! Are you ready to play again?';    
+  } elseif (($player_average_tags+1) < ($site_average)) {
+    $message .= ' You\'re really close to the game average ('.$site_average.'). Are you ready to have another go and see if you can do better?'; 
   } else {
     $message .= ' That\'s not quite as much as the game average, but nevermind - have another go and see if you can improve your score. ';
   }
