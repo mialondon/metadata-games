@@ -49,9 +49,9 @@ define('MMG_IMAGE_URL',  WP_CONTENT_URL.'/plugins/'. basename(dirname(__FILE__))
 define('MMG_PLUGIN_URL',  WP_PLUGIN_URL.'/includes/'. basename(dirname(__FILE__)));
 define("FACTSCORE", "250");
 define("TAGSCORE", "5");
-define("PATH_TO_DONALD_PAGE", "/dagmar/"); // path to page with Donald game shortcode, from WordPress root
-define("PATH_TO_DORA_PAGE", "/charlie/"); // path to page with Donald game shortcode, from WordPress root
-define("PATH_TO_UGCREPORTS_PAGE", "/reports/"); // path to page with Donald game shortcode, from WordPress root
+define("PATH_TO_DONALD_PAGE", WP_CONTENT_URL. "/dagmar/"); // path to page with Donald game shortcode, from WordPress root
+define("PATH_TO_DORA_PAGE", WP_CONTENT_URL. "/charlie/"); // path to page with Donald game shortcode, from WordPress root
+define("PATH_TO_UGCREPORTS_PAGE", WP_CONTENT_URL. "/reports/"); // path to page with Donald game shortcode, from WordPress root
 
 /* for live */
 // define("PATH_TO_DONALD_PAGE", "/donald/"); // path to page with Donald game shortcode, from WordPress root

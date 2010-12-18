@@ -52,10 +52,10 @@ function printObject() {
     // print object name
     $object_name = urldecode($turn_object->name); 
     if ($object_name != 'None') { // Many Powerhouse objects don't have names  
-       $object_print_string = '<h2 class="objectname">'.urldecode($turn_object->name).'</h2>';
+       $object_print_string = '<h2 class="objectname"><a name="object">'.urldecode($turn_object->name).'</a></h2>';
     } else {
       // use the description instead
-      $object_print_string = '<h2 class="noobjectname">[untitled]</h2>';
+      $object_print_string = '<h2 class="noobjectname"><a name="object">[untitled]</a></h2>';
       $object_print_string .= '<p class="objectdescription">'.urldecode($turn_object->description).'</p>';
     }
     
@@ -391,7 +391,7 @@ function mmgSQLObjectsByUser($game_code) {
  * 
  */
 function drawCompletionBox($game_code) {
-  echo "<h3>Objects you've tagged in this game</h3>";
+  echo "<h3>Objects you've played in this game</h3>";
 
   // store object id for player (table or view???? ####)
   
@@ -399,42 +399,52 @@ function drawCompletionBox($game_code) {
   
   global $wpdb;
   global $current_user;
+  $i = 1; // for table row end
 
   // number of objects tagged
   $sql = mmgSQLObjectsByUser($game_code);
   
   $results = $wpdb->get_results($wpdb->prepare ($sql));
-  
-  //$wpdb->show_errors();
-  //$wpdb->print_error();
 
-  echo '<table border="0" bordercolor="#FFCC00" style="background-color:#FFFFCC" width="280" cellpadding="0" cellspacing="0"><tr>';
+  echo '<table border="0" class="completion_box" width="280" cellpadding="0" cellspacing="0"><tr';
 
   if ($results) {
     
-    $c = $wpdb->num_rows;
+    $c = $wpdb->num_rows; // how many result rows overall?
     $tc = 5 - ($c % 5); // how many empty cells to fill?
-    $i = 1; // for table row end
+    $num_rows = $c/5; // how many rows are filled this turn?
+    $num_rows = (int) $num_rows; // really, honestly, I want an int
+    
+    if ($c > 4) { // first row is full
+      echo ' class="filled_row"';
+    }
+    echo '>';
     
     foreach ($results as $result) {
-      echo '<td>';
-      // echo $result->object_id; // should update view to get object title for alt text/title tip
+      echo '<td>'; 
+      // should update view to get object title for alt text/title tip ###
       echo '<a href="' . PATH_TO_UGCREPORTS_PAGE . '?obj_ID=' . $result->object_id .'" title="View all content added about this object"><img class="widget_thumbnail" src="'. urldecode($result->image_url) .'" width="35" /></a>';
       echo "</td>";
-      if ($i % 5 == 0) {
-        echo '</tr><tr>';
+      if ($i % 5 == 0) { // is the end of a row
+        echo '</tr><tr'; 
+        if ($num_rows > 1) { // next row is not full
+          echo ' class="filled_row"';
+          $num_rows = $num_rows-1; // reduce number of rows left
+        } else {
+          echo ' class="completion_box"'; // row not filled
+        }
+        echo '>';
       }
       $i++;
     }
     while ($tc > 0) { // fill empty cells with '?' to encourage filling
-      echo '<td><span class="next_box">'.$tc.'</span></td>';
+      echo '<td><span class="next_box">'.$tc.'</span></td>'; 
       $tc = $tc-1;
     }
-    echo '</tr></table>';
   } else {  // 'no results yet';
     $tc = 5;
     while ($tc > 0) { // fill empty cells with '?' to encourage filling
-      echo '<td><span class="next_box">?</span></td>';
+      echo '<td><span class="next_box">?</span></td>'; 
       $tc = $tc-1;
     }
   }
@@ -794,7 +804,27 @@ function mmgPrintObjectBlock($my_object) {
   } 
   
   return array ($object_id, $object_print_string);
+ 
+}
 
+/*
+ * Work up links for sharing
+ */
+function mmgGetShareLinks() {
+  // http://www.facebook.com/sharer.php?u=http%3A%2F%2Flocalhost%2Fwordpress%2Fcharlie%2F&t=Charlie
+  
+  // <a rel="nofollow" target="_blank" style="background: transparent url(http://localhost/wordpress/wp-content/plugins/share-and-follow/default/16/facebook.png) no-repeat top left;padding-left:20px;line-height:20px;" class="facebook"  href="http://www.facebook.com/sharer.php?u=http%3A%2F%2Flocalhost%2Fwordpress%2Fcharlie%2F&amp;t=Charlie" title="Recommend this post : Charlie on Facebook"><span class="head">Recommend on Facebook</span></a>
+  
+  
+  // http://twitter.com/home/?status=Come+and+play+these+games+too%21++-+http%3A%2F%2Flocalhost%2Fwordpress%2Fcharlie%2F"
+  // <a rel="nofollow" target="_blank" style="background: transparent url(http://localhost/wordpress/wp-content/plugins/share-and-follow/default/16/twitter.png) no-repeat top left;padding-left:20px;line-height:20px;" class="twitter" href="http://twitter.com/home/?status=Come+and+play+these+games+too%21++-+http%3A%2F%2Flocalhost%2Fwordpress%2Fcharlie%2F" title="Tweet this post : Charlie on Twitter"><span class="head">Tweet about it</span></a>
+  $permalink = get_permalink($id);
+  $permalink = urlencode($permalink);
+  
+  $twitter = '<a rel="nofollow" target="_blank" style="background: transparent url(http://localhost/wordpress/wp-content/plugins/share-and-follow/default/16/twitter.png) no-repeat top left;padding-left:20px;line-height:20px;"';
+  $facebook = 'http://www.facebook.com/sharer.php?u=' . $permalink;
+  
+  return $links;
   
 }
 

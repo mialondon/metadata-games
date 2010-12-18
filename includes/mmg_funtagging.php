@@ -22,10 +22,11 @@
  */
  
 function funtagging() {
-  
+
   echo '<div class="funtagging mmgContent">';
-  
+
   // check to see if there's a logged in user and add their points if not already saved
+  // move this so it's on every page!
   if ( is_user_logged_in() ) {
     mmgSaveNewUserPoints();
   }
@@ -36,7 +37,6 @@ function funtagging() {
   if($_POST['submitTags'] == "Tag!") {
     saveTurn('funtagging');
   } else { // is first load or possibly after a skipped object ###
-   echo '<div class="funtagging mmgContent">';
    echo '<div class="messages">';
    echo '<p><img src="'. MMG_IMAGE_URL . 'Dora_pensive.gif" align="left"> "Hi, my name is Dora, and I\'m a junior curator.  It\'s my first day and I\'ve made a big mistake - I accidentally deleted all the information we were going to add to our collections online.  I need to re-label them, and quickly...</p>';
    echo '<p>Can you help?  <strong>Add words about the thing in the picture that would help someone find it on Google</strong> - how it looks, what does, who might have used it - anything you can think of."</p>';
@@ -88,10 +88,30 @@ $permalink = get_permalink($id);
   </form>
   
   </div>
-</form></div>
+</div>
 </div>   
   
 <?php  
+}
+
+/*
+ * Check how many turns the player has had this session (based on session cookie)
+ */
+function mmgGetTurnCount() {
+  
+  global $wpdb;
+  
+  // get how many turns they've had in this session for feedback
+  $sql = "SELECT count(session_id) as num_turns FROM " . table_prefix . "turns WHERE session_id = '". ($_COOKIE['PHPSESSID']) ."' "; // and game = 'funtagging' ?
+  $results = $wpdb->get_row ($wpdb->prepare ($sql));
+  
+  if (is_object($results)) {
+    $count = $results->num_turns;
+  } else {
+    unset($count);
+  }
+  
+  return $count;
 }
 
 /*
@@ -103,79 +123,72 @@ function mmgGetDoraTurnMessages($score) {
   
   global $wpdb;
   
-  // get how many turns they've had in this session for feedback
-  $sql = "SELECT count(session_id) as num_turns FROM " . table_prefix . "turns WHERE session_id = '". ($_COOKIE['PHPSESSID']) ."' ";
-  $results = $wpdb->get_row ($wpdb->prepare ($sql));
+  $num_turns = mmgGetTurnCount();
   
-  if (is_object($results)) {
-    $num_turns = $results->num_turns;
+  // if five turns, have filled a row and 'win'
+  if ($num_turns % 5 == 0) {
+    $message = '<div class="game_completed"><h3 class="game_completed">Hooray! You completed a set!</h3>'; // win message
+    $game_marker_message = mmgDoraGameMarker();
+    if (!empty($game_marker_message)) {
+      $message .= $game_marker_message;
+    }
+    $message .= '</div>';
+        
+  } 
+  
+    $img_src = '<img src="'. MMG_IMAGE_URL;
+    if ($score >= 40 || $num_turns % 5 == 0) {
+      $img_src .= 'Dora_happy.gif"'; // wow!
+    } else {
+      $img_src .= 'Dora_talking.gif"'; // well done
+    }
+    $img_src .= ' align="left">';
+  
+    $message .= '<p>"' .$img_src;
+    if ($score >= 40) {
+      $message .= '<strong>Wow!</strong> ';
+    } elseif ($score < 40 && $score >= 20) {
+      $message .= '<strong>Well done!</strong> ';    
+    } elseif ($score < 20 && $score > 5) {
+      $message .=  '<strong>Thank you!</strong> ';
+    } // also if one, for thank you.
     
-    if ($num_turns % 5 == 0) { // it's a 'game'!  Woo, yeah.
-      $message = '<div class="game_completed"><p class="game_completed">Hooray!  You completed a row!</p></div>';
-      $game_marker_message = mmgDoraGameMarker();
-      if (!empty($game_marker_message)) {
-        $message .= $game_marker_message;
-      }
-    } else { // carry on
-      $img_src = '<img src="'. MMG_IMAGE_URL;
-      if ($score >= 40) {
-        $img_src .= 'Dora_happy.gif"'; // wow!
-      } else {
-        $img_src .= 'Dora_talking.gif"'; // well done
-      }
-      $img_src .= ' align="left">';
-      
-      $message = '<p>"' .$img_src;
-      if ($score >= 40) {
-        $message .= '<strong>Wow!</strong> ';
-      } elseif ($score < 40 && $score >= 20) {
-        $message .= '<strong>Well done!</strong> ';    
-      } elseif ($score < 20 && $score > 5) {
-        $message .=  '<strong>Thank you!</strong> ';
-      } // also if one, for thank you.
-      
-      $message .=  'You added ' . $score/TAGSCORE . ' tag';
+    $message .=  'You added ' . $score/TAGSCORE . ' tag';
+  
+    if ($score > 5) {  // grammar for one tag
+       $message .=  's '; 
+    }
+    $message .=  '  and you scored <strong>' . $score . '</strong> points.  I\'ve added your object to your collection over on the right.</p><p>'; // ### you have x objects
     
-      if ($score > 5) {  // grammar for one tag - is greater than working?
-         $message .=  's '; 
-      }
-      $message .=  '  and you scored <strong>' . $score . '</strong> points.  I\'ve added your object to your collection over on the right.</p><p>'; // ### you have x objects
-      
-      if ($score <= 5) { // score = 5 - one tag.
-        $message .=  ' <strong>Thank you!</strong>  But you only entered one tag - did you forget to put commas between your tags?  (Like this: \'one, two, three\' not \'one two three\'). Or try this hint - look for variations on words to describe the date or place, or perhaps the colours and materials of the object, what it would be like to use or who might have used it. ';
-      }
-    
-      // make variant thank you messages, depending on count/random ###
-      if ($num_turns < 5 && ($score < 20 && $score > 5)) {
-        $message .= 'Don\'t forget to try variations on words to describe the dates, places, colours and materials of the thing, or perhaps relevant subjects or people. ';
-        }
-      
-      if ($num_turns == 1) { // first entry
-        if ($score > 5) {
-        $message .= ' What a great start. ';
-        }
-        $message .= ' Can you tag another? '; 
-      } 
-      if ($num_turns == 2 ) { // random message
-        $message .= " Don't feel you have to use fancy words - everyday language is just what we need to help other visitors find these objects. ";
-      }
-      if ($num_turns % 3 == 0 && $num_turns % 2 != 0 ) { // random message
-        $message .= ' Can you tag five objects to fill a row?  ';
-      }
-      if ($num_turns % 6 == 0 ) { // random message
-        $message .= ' Why not share this game with your friends?  (Or are you scared they might beat your score?) ';
-      } 
-      if ($num_turns % 11 == 0 ) { // random message
-        $message .= ' Every tag helps. ';
-      }  
-      $message .= '</p>';    
-    
+    if ($score <= 5) { // score = 5 - one tag.
+      $message .=  ' <strong>Thank you!</strong>  But you only entered one tag - did you forget to put commas between your tags?  (Like this: \'one, two, three\' not \'one two three\'). Or try this hint - look for variations on words to describe the date or place, or perhaps the colours and materials of the object, what it would be like to use or who might have used it. ';
     }
   
-  } else {
-    $message = ''; // something went wrong - no turns, not even the one just submitted.  
-  }
-  
+    // make variant thank you messages, depending on count/random ###
+    if ($num_turns < 5 && ($score < 20 && $score > 5)) {
+      $message .= 'Don\'t forget to try variations on words to describe the dates, places, colours and materials of the thing, or perhaps relevant subjects or people. ';
+      }
+    
+    if ($num_turns == 1) { // first entry
+      if ($score > 5) {
+      $message .= ' What a great start. ';
+      }
+      $message .= ' Can you tag another? '; 
+    } 
+    if ($num_turns == 2 ) { // random message
+      $message .= " Don't feel you have to use fancy words - everyday language is just what we need to help other visitors find these objects. ";
+    }
+    if ($num_turns % 3 == 0 && $num_turns % 2 != 0 ) { // random message
+      $message .= ' Can you tag five objects to fill a row?  ';
+    }
+    if ($num_turns % 6 == 0 ) { // random message
+      $message .= ' Why not share this game with your friends?  (Or are you scared they might beat your score?) ';
+    } 
+    if ($num_turns % 11 == 0 ) { // random message
+      $message .= ' Every tag helps. ';
+    }  
+    $message .= '</p>';    
+   
   return $message;  
   
 }
@@ -239,6 +252,7 @@ function mmgGetSiteTaggingAverages() {
  */
 function mmgDoraGameMarker() {
   global $wpdb;
+  global $current_user;
     
   // get last five turns for that session id or user name (order by turn id desc, limit 5)
   $sql = "SELECT turn_id FROM ". table_prefix. "turns WHERE game_code = 'funtagging' ";    
@@ -268,32 +282,74 @@ function mmgDoraGameMarker() {
     if ($game_results) {
       $numTags = $game_results;
       $player_average_tags = $numTags/5;
-      $img_src .= 'Dora_happy.gif"'; // wow! 
-      $message .= '<p class="game_congrats"><img src="' . MMG_IMAGE_URL.$img_src .' align="left">"You scored a grand total of ' . TAGSCORE * $numTags . ' points for this game. ';
-      $message .= ' On average, you added ' . $player_average_tags . ' tags for each object.';      
+      //$img_src .= 'Dora_happy.gif"'; // wow!
+      $game_score = TAGSCORE * $numTags;
+      $message .= '<p class="game_congrats">You scored a grand total of ' . $game_score . ' points for this set. ';
+      $message .= ' On average, you added ' . $player_average_tags . ' tags for each object.';
+      
+      mmgSaveGameScore($game_score, 'funtagging'); // store their game points
     }
   }
   
   if (!empty($player_average_tags)) {
   $site_average = mmgGetSiteTaggingAverages();
   
-  if ($player_average_tags >= ($site_average+1)) { // 2 above average
-    $message .= ' You\'re a super tagger!  You\'re smashing the game average ('.$site_average.'), go you! Are you ready to play again and keep your lead?';    
-  } elseif ($player_average_tags > ($site_average)) { // 1 above average
-    $message .= ' You\'re beating the game average ('.$site_average.'), go you! Are you ready to play again?';    
-  } elseif (($player_average_tags+1) < ($site_average)) {
-    $message .= ' You\'re really close to the game average ('.$site_average.'). Are you ready to have another go and see if you can do better?'; 
+  if (!is_user_logged_in() ) {
+    $save_scores_message = ' Did you know you can save your score by registering?  It only takes a minute.</p><p> ';
+  }
+  
+  $game_score = $player_average_tags-$site_average; // could be negative
+  
+  if ($game_score >= 2) { // 2 above average
+    $message .= ' Hey super tagger, you\'re smashing the game average ('.$site_average.')! '. $save_scores_message . ' Are you ready to play again and keep your lead?';    
+  } elseif ($game_score > 0) { // 1 above average
+    $message .= ' You\'re beating the game average ('.$site_average.'), go you! '. $save_scores_message . ' Are you ready to play again?';
+  } elseif ($game_score == 0) {
+    $message .= ' You\'re exactly on the game average ('.$site_average.')! '. $save_scores_message . ' Are you ready to have another go and see if you can do beat it?';  
+  } elseif ($game_score < 0) {
+    $message .= ' You\'re really close to the game average ('.$site_average.'). '. $save_scores_message . ' Are you ready to have another go and see if you can do better?'; 
   } else {
-    $message .= ' That\'s not quite as much as the game average, but nevermind - have another go and see if you can improve your score. ';
+    $message .= ' That\'s not quite as much as the game average, but nevermind - have another go and see if you can improve your score. '. $save_scores_message ;
   }
   $message .= '</p>';
-  // for when I can get online and fix it...
-  $message .= '<p>And why not tell your friends?  Tweet your score or share it on Facebook...</p>';
 
+  // share
+ /* $message .= '<p>And why not tell your friends? ';
+  $message .= mmgGetShareLinks();
+  $message .= '</p>'; */
+
+  $message .= '<span class="play_link"><a href="#object" class="play_again">Play again</a></span>';
   }
   
   return $message;
   
+}
+
+/*
+ * Stores the points awarded for a game win
+ * e.g. completing a set (row of five objects) in Dora
+ */
+function mmgSaveGameScore($game_score, $game_code) {
+  global $wpdb;
+  global $current_user;
+  $session_id = ($_COOKIE['PHPSESSID']); 
+  $ip_address = $_SERVER['REMOTE_ADDR'];
+  
+  if (!empty($game_score)) {
+    
+  if(is_user_logged_in()) {
+    get_currentuserinfo();
+    $wp_username = $current_user->user_login; 
+  } // will need to go back and update previous turns with login if they sign up ###
+  
+  $wpdb->query( $wpdb->prepare( "
+  INSERT INTO ". table_prefix."game_scores 
+  (game_score, game_code, session_id, wp_username )
+  VALUES ( %d, %s, %s, %s )" ,
+  array( $game_score, $game_code, $session_id, $wp_username ) ) ); 
+  $turn_id = mysql_insert_id();
+  }
+
 }
 
 ?>
