@@ -36,7 +36,7 @@ function factseeker() {
     // if first load - set game state how? ###
   echo '<div class="messages">';
   echo '<p><img src="'. MMG_IMAGE_URL . 'Donald_serious.png" align="left"> "Hello, Holmes!  Thank goodness you\'re here!</p><p>Can you help us solve The Case Of The Mystery Objects?  The dastardly Moriarty has left behind these objects, but we don\'t know why. Can you <strong>use the information on this page to find an interesting fact or link about the thing in the image below</strong>?</p>';
-  echo '<p>You may need to hunt around for some relevant facts - try searching books or the internet. Then <strong>report back</strong> to Headquarters by filling in the form below.  If you succeed, you\'ll get <strong>' . FACTSCORE . ' merit points</strong> towards a promotion for your hard work!</p><p>If it\'s been a while since your last case with us, here\'s a hint to get you going: if you can\'t find anything specific about this object, try to find something about the general type of object, who might have used it, or what it\'s used for instead.</p>';
+  echo '<p>You may need to hunt around for some relevant facts - try searching books or the internet. Then <strong>report back</strong> to Headquarters by filling in the form below.  If you succeed, you\'ll get <strong>' . FACTSCORE . ' merit points</strong> towards a promotion for your hard work!</p>';
   echo "<p>Not sure you can ferret out a fact about this object?";
   printRefresh($object_id);
   echo " Don't worry, skipping until you find an object you can work with won't affect your chances for promotion...</p>";
@@ -67,7 +67,7 @@ function mmgFactseekerChoice() {
   if($_POST['submitTags'] == "Send your report") {
     saveTurn('factseeker');
     // make variant thank you messages, depending on count/random ###
-    echo '<div class="messages"><p><img src="'. MMG_IMAGE_URL . 'Donald_happy.png" align="left"> "Thank you, Holmes! Your report has been sent to the team for review.  The object has been added to your case file on the right, and you have been awarded <strong>' . FACTSCORE . '</strong> merit points towards your next promotion (assuming the evidence checks out when we verify it).</p><p>Here are some more objects left by Moriarty...</p></div>';
+    echo '<div class="messages"><p><img src="'. MMG_IMAGE_URL . 'Donald_happy.png" align="left"> "Thank you, Holmes! Your report has been sent to the team for review.  The object has been added to your case file on the right, and you have been awarded <strong>' . FACTSCORE . '</strong> merit points towards your next promotion (assuming the evidence checks out when we verify it).</p><p>Here are some more objects left by Moriarty, do any of these catch your eye?</p></div>';
     
     $objects_print_string = mmgDisplayObjectBlocks('donald'); 
     
@@ -91,8 +91,8 @@ function mmgFactseekerChoice() {
     // if first load or clean URL
     echo '<div class="messages">';
     echo '<p><img src="'. MMG_IMAGE_URL . 'Donald_serious.png" align="left"> "Hello, Holmes!  Thank goodness you\'re here!</p><p>Can you help us solve The Case Of The Mystery Objects?  The dastardly Moriarty has left behind these objects, but we don\'t know why. Can you <strong>use the information on this page to find an interesting fact or link about one of the things in the images below</strong>?</p>';
-    echo '<p>You may need to hunt around for some relevant facts - try searching books or the internet. Then <strong>report back</strong> to Headquarters by filling in the form below.  If you succeed, you\'ll get <strong>' . FACTSCORE . ' merit points</strong> towards a promotion for your hard work!</p><p>If it\'s been a while since your last case with us, here\'s a hint to get you going: if you can\'t find anything specific about this object, try to find something about the general type of object, who might have used it, or what it\'s used for instead.</p>';
-    echo "<p>I've selected some objects at random - take your pick.</p>";
+    echo '<p>You may need to hunt around for some relevant facts - try searching books or the internet. Then <strong>report back</strong> to Headquarters by filling in the form below.  If you succeed, you\'ll get <strong>' . FACTSCORE . ' merit points</strong> towards a promotion for your hard work!</p>';
+    echo '<p>I\'ve selected some objects at random - take your pick. I know you like to prepare, so this link will open a new window and show you some <a href="' . PATH_TO_UGCREPORTS_PAGE . '?report=facts" title="View other facts added" target="_blank">previous examples of reports submitted</a>.</p>';
     echo '</div>';
     
     $objects_print_string = mmgDisplayObjectBlocks('donald'); 
@@ -126,7 +126,7 @@ function printFormFactSeeker($object_id)  {
   <fieldset id="tfa_addthedetailsfor" class="wfSection">
   <legend>Add the information you've discovered about this object to your report</legend>
   <div id="tfa_Headline-D" class="oneField">
-  <label class="preField" for="tfa_Headline" for="fact_headline">Summary</label><br />
+  <label class="preField" for="tfa_Headline" for="fact_headline">Report title</label><br />
   <input  id="tfa_Headline" type="text" name="fact_headline" class="fact" size="80" maxlength="100" value="" /><br /><span class="field-hint" id="tfa_Headline-H"><span>Our investigators are busy - let them know why they should check out this information.</span></span><br /><br />
 </div>
 

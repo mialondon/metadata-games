@@ -49,32 +49,59 @@ function mmgListObjectUGC() {
     // get UGC
     $sql = "SELECT * FROM ". table_prefix."turns WHERE object_id = '" . $obj_id . "' ORDER BY game_code";
     //echo $sql;
-    $results = $wpdb->get_results($wpdb->prepare($sql)); 
+    $results = $wpdb->get_results($wpdb->prepare($sql));
 
     if($results) { // is array, not object
-      echo '<p>So far ' . count($results) . ' turns have added content about this object.</p>';
+      $count=count($results);
+      $message = '<p>So far people have added content in '. count($results) . ' turn';
+      if ($count > 1) {  // grammar for one tag
+       $message .=  's '; 
+      }
+      $message .=  ' about this object.</p>';
       // if object exists in turns, get data from each table with related data by game type
       // get tags
-      echo '<div class="ugctags"><h3>Tags</h3><p>';
+      $message .= '<div class="ugctags"><h3>Tags</h3><p>';
       $tag_string = mmgPrintUGCTags($obj_id);
-      //$tag_string = rtrim($tag_string, ','); // doesn't work?
-      echo $tag_string;
-      echo '</p></div>';
+      if (!empty($tag_string)) {
+        $message .= $tag_string;
+      } else { // 'no tags yet, why not add some'? ###
+        $message .= 'No tags yet. Why not <a href="' . PATH_TO_DORA_PAGE . '?obj_ID='.$obj_id.'" title="Help Dora with this object" target="_blank">help Dora by adding some?</a>';
+      }
+      
+      $message .= '</p></div>';
     
       // get facts
-      echo '<div class="ugcfact">';
+      $message .= '<div class="ugcfact">';
       $fact_string = mmgPrintUGCFacts($obj_id);
-      echo $fact_string;
-      echo '</div>';
+      if (!empty($fact_string)) {
+        $message .= $fact_string;
+      } else {// 'no facts yet, why not add some'? ###
+        $message .= '<h3>Facts</h3><p>No facts yet. Why not <a href="' . PATH_TO_DONALD_PAGE . '?obj_ID='.$obj_id.'" title="find an interesting fact about this object" target="_blank">take the fact challenge with this object?</a></p>';
+      }      
+      $message .= '</div>';
       // ### add links to add your own tags or facts with URLs based on config settings
     
+      echo $message;
       
     } else {
       echo 'No player content for this object yet.';
     }
 
     
-  } else {
+  } elseif(isset($wp_query->query_vars['report'])) {
+    $report_type = $wp_query->query_vars['report'];
+    if($report_type == 'facts') {
+      $sql = "SELECT count( object_id ) AS numUGC, object_id FROM ". table_prefix."turns WHERE game_code = 'factseeker' GROUP BY object_id ORDER BY numUGC DESC";
+      $results = $wpdb->get_results($wpdb->prepare($sql));
+    
+      foreach ($results as $result) {
+        echo '<p><a href="?obj_ID='.$result->object_id.'">'.$result->object_id.'</a> has '.$result->numUGC .' facts</p>';
+      }
+      } else {
+        echo 'Sorry, report type not found.';
+      }
+    
+  } else { // no parameter
     echo '<h2>A list of objects with data created by players</h2><p>Follow a link to see what\'s been added for that object so far.  (At the moment it\'s by internal ID, not museum or accession number - sorry!  Also, some of the content is test content - I will be tidying that up.  If you see anything objectionable, let me know via the Contact page.)</p>';
     $sql = "SELECT count( object_id ) AS numUGC, object_id FROM ". table_prefix."turns GROUP BY object_id ORDER BY numUGC DESC";
     $results = $wpdb->get_results($wpdb->prepare($sql));
@@ -99,7 +126,7 @@ function mmgPrintUGCFacts($object_id) {
   // print facts
   if($factresults) { // is array, not object
     foreach ($factresults as $factresult) {
-      $fact_string .= '<h3>Headline: ' . $factresult->fact_headline . '</h3><p>Summary: ' . urldecode($factresult->fact_summary) . '<br />Source: ' . $factresult->fact_source . '</p>';
+      $fact_string .= '<h3>Headline: ' . stripslashes($factresult->fact_headline) . '</h3><p>Summary: ' . stripslashes(urldecode($factresult->fact_summary)) . '<br />Source: ' . stripslashes(urldecode($factresult->fact_source)). '</p>';
     }
   } else {
     $fact_string = '';
@@ -121,12 +148,12 @@ function mmgPrintUGCTags($object_id) {
   $tagresults = $wpdb->get_results($wpdb->prepare($tagssql));
   if($tagresults) { // is array, not object  
     foreach ($tagresults as $tagresult) {
-      $tag_string .= ' ' . $tagresult->tag . ', ';
+      $tag_string .= ' ' . stripslashes($tagresult->tag) . ', ';
     }
   } else {
       $tag_string = '';
   }
-  
+  $tag_string = trim($tag_string, ', '); // remove last comma
   return $tag_string;
 }
 ?>

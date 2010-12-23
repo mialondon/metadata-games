@@ -44,14 +44,14 @@ require_once(dirname(__FILE__) . "/includes/mmg_factseeker.php");
 require_once(dirname(__FILE__) . "/includes/mmg_reports.php");
 require_once(dirname(__FILE__) . "/includes/mmg_widgets.php");
 
-// these should really be made into config options ###
+// these should really be made into config options ### @todo
 define('MMG_IMAGE_URL',  WP_CONTENT_URL.'/plugins/'. basename(dirname(__FILE__)) . '/includes/images/');
 define('MMG_PLUGIN_URL',  WP_PLUGIN_URL.'/includes/'. basename(dirname(__FILE__)));
 define("FACTSCORE", "250");
 define("TAGSCORE", "5");
-define("PATH_TO_DONALD_PAGE", WP_CONTENT_URL. "/dagmar/"); // path to page with Donald game shortcode, from WordPress root
-define("PATH_TO_DORA_PAGE", WP_CONTENT_URL. "/charlie/"); // path to page with Donald game shortcode, from WordPress root
-define("PATH_TO_UGCREPORTS_PAGE", WP_CONTENT_URL. "/reports/"); // path to page with Donald game shortcode, from WordPress root
+define("PATH_TO_DONALD_PAGE", WP_CONTENT_URL. "/donald/"); // path to page with Donald game shortcode, from WordPress root
+define("PATH_TO_DORA_PAGE", WP_CONTENT_URL. "/dora/"); // path to page with Donald game shortcode, from WordPress root
+define("PATH_TO_UGCREPORTS_PAGE", WP_CONTENT_URL. "/content-added-so-far/"); // path to page with Donald game shortcode, from WordPress root
 
 /* for live */
 // define("PATH_TO_DONALD_PAGE", "/donald/"); // path to page with Donald game shortcode, from WordPress root
@@ -205,6 +205,11 @@ function gameShortCode($atts, $content=null) {
       include_once(ABSPATH.'/wp-content/plugins/mmg/mmg_functions.php'); 
   }
   
+  // testing this here
+  if ( is_user_logged_in() ) {
+    mmgSaveNewUserPoints();
+  }
+  
   extract(shortcode_atts(array( // lowercase cos the short tags are, elsewhere camel.
   "gametype" => 'simpletagging' // default
   ), $atts));
@@ -250,6 +255,13 @@ function parameter_skippedID($oVars) {
     return $oVars;
 }
 add_filter('query_vars', 'parameter_skippedID');
+
+/* adding a filter for skipped object ID */
+function parameter_reporttype($oVars) {
+    $oVars[] = "report"; 
+    return $oVars;
+}
+add_filter('query_vars', 'parameter_reporttype');
 
 // add widget, trying smashing book method this time
 class mmgHello extends WP_Widget {

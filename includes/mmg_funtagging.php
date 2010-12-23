@@ -26,10 +26,10 @@ function funtagging() {
   echo '<div class="funtagging mmgContent">';
 
   // check to see if there's a logged in user and add their points if not already saved
-  // move this so it's on every page!
-  if ( is_user_logged_in() ) {
+  // move this so it's on every page! +++
+  /*if ( is_user_logged_in() ) {
     mmgSaveNewUserPoints();
-  }
+  }*/
     
   list($object_id, $object_print_string) = printObject();
   
@@ -102,7 +102,7 @@ function mmgGetTurnCount() {
   global $wpdb;
   
   // get how many turns they've had in this session for feedback
-  $sql = "SELECT count(session_id) as num_turns FROM " . table_prefix . "turns WHERE session_id = '". ($_COOKIE['PHPSESSID']) ."' "; // and game = 'funtagging' ?
+  $sql = "SELECT count(session_id) as num_turns FROM " . table_prefix . "turns WHERE session_id = '". ($_COOKIE['PHPSESSID']) ."' AND game_code = 'funtagging'"; 
   $results = $wpdb->get_row ($wpdb->prepare ($sql));
   
   if (is_object($results)) {
@@ -127,7 +127,11 @@ function mmgGetDoraTurnMessages($score) {
   
   // if five turns, have filled a row and 'win'
   if ($num_turns % 5 == 0) {
-    $message = '<div class="game_completed"><h3 class="game_completed">Hooray! You completed a set!</h3>'; // win message
+    if ($num_turns > 5) {
+      $message = '<div class="game_completed"><h3 class="game_completed">Hooray! You\'ve completed another level!</h3>'; // win message
+    } else {
+      $message = '<div class="game_completed"><h3 class="game_completed">Hooray! You\'ve completed a level!</h3>'; // win message
+    }
     $game_marker_message = mmgDoraGameMarker();
     if (!empty($game_marker_message)) {
       $message .= $game_marker_message;
@@ -284,8 +288,8 @@ function mmgDoraGameMarker() {
       $player_average_tags = $numTags/5;
       //$img_src .= 'Dora_happy.gif"'; // wow!
       $game_score = TAGSCORE * $numTags;
-      $message .= '<p class="game_congrats">You scored a grand total of ' . $game_score . ' points for this set. ';
-      $message .= ' On average, you added ' . $player_average_tags . ' tags for each object.';
+      $message .= '<p class="game_congrats">You scored a grand total of ' . $game_score . ' points for this level. ';
+      $message .= ' On average, you added ' . $player_average_tags . ' tags for each object. You can check out the content you\'ve added by clicking on objects in your display case on the right.';
       
       mmgSaveGameScore($game_score, 'funtagging'); // store their game points
     }
@@ -318,7 +322,7 @@ function mmgDoraGameMarker() {
   $message .= mmgGetShareLinks();
   $message .= '</p>'; */
 
-  $message .= '<span class="play_link"><a href="#object" class="play_again">Play again</a></span>';
+  $message .= '<span class="play_again"><a href="#object" class="play_link">Play again</a></span>';
   }
   
   return $message;

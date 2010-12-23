@@ -104,7 +104,7 @@ function printObjectBookmark($object_id) {
   //$temp_object_id = checkForParams();
   list($temp_object_id, $skipped_ID) = checkForParams();  
   
-    echo '<p class="saveurl">Tip: copy this URL to come back later if you want more time to think or research: ';
+    echo '<p class="saveurl">Tip: save this URL if you want more time to think or research: ';
     if (!empty($temp_object_id)) { // if the page had loaded a requested object successfully, print that URL
       echo '<a href="'.curPageURL().'">'.curPageURL().'</a>'; // since this includes the params we only want this if the query is known to be successful
     } else { // get random object
@@ -273,7 +273,7 @@ function mmgGetObject($obj_id = null) {
   } else { // get the full record for that ID and life is good
     $get_random_object_sql = "SELECT * FROM $table WHERE object_id = '$random_row_id' LIMIT 1";  }
   
-  // echo $get_random_object_sql; // +++
+  // echo $get_random_object_sql; // uncomment if 'seen all the objects' message shows
   
   $random_row = $wpdb->get_row ($wpdb->prepare ($get_random_object_sql));
   
@@ -294,7 +294,7 @@ function mmgGetObject($obj_id = null) {
       array($random_row_id, 1) ) ); 
     }
   } else { // well, gosh, we've run out of objects that you haven't seen yet
-    echo '<h1>You\'ve seen all the objects!  Use the contact form to request more - you might even get a special award for your achievements.</h1>';
+    echo '<h1>Something went wrong, or you\'ve seen all the objects!  Use the contact form to request more objects or report this error - you might even get a special award for your achievements.</h1>';
     // echo '<h1>Whoops! My bad, could you please click the link to reload the page?  Terribly sorry about that!</h1>'; // general emergency text, assuming reloading works
   }
 
@@ -722,12 +722,8 @@ function mmgDisplayObjectBlocks($callingFunction) {
     // get x random objects
     
     while ($i < 9) { // for 8 objects
-      if ($i % 2 == 0) { 
-        echo '<div class="child last">';
-      }
-      else {
-        echo '<div class="child">';       
-      }
+      echo '<div class="factseeker child">';       
+    
       $object_to_print = randomRow(table_prefix.'objects', 'object_id');
       
       if ($object_to_print) {
@@ -737,8 +733,8 @@ function mmgDisplayObjectBlocks($callingFunction) {
       }
 
       // link to game page - needs WP base URL? ###
-     echo '<p><a href="'. '?obj_ID=' . $object_id .'" class="playthis">Play Donald with this object.</a> ###</p>';
-     echo '</div>';    
+     echo '<p class="play_factseeker"><a href="'. '?obj_ID=' . $object_id .'" class="play_link">Take the fact challenge for this object</a></p>';
+     echo '<div style="clear:both"></div></div>';    
     }
 
   }
@@ -767,26 +763,30 @@ function mmgPrintObjectBlock($my_object) {
     $object_description = urldecode($my_object->description);
   
     $object_print_string;
- 
+
     // print object name
     if ($object_name != 'None') { // Many Powerhouse objects don't have names  
-       $object_print_string = '<h3 class="objectname">'.$object_name.'</h3>';
+       $object_print_string .= '<h3 class="objectname">'.$object_name.'</h3>';
     } else {
       // use the description instead
-      $object_print_string = '<h3 class="noobjectname">[untitled]</h3>';
-      $object_print_string .= '<p class="objectdescription">'.$object_description.'</p>'; // truncate after c140 characters ###
+      $object_print_string = '<h3 class="noobjectname">[untitled]</h3>'; 
+    }
+
+     // print image. Get smaller Science Museum images for this layout, keep Powerhouse small size
+    if ($institution == 'Science Museum') {
+      $image_url = str_replace("size=Small", "size=Inline", $image_url);
+    } 
+    $object_print_string .= '<div class="float_left"><img class="object_image" src="'. $image_url .'" />';
+    $object_print_string .= '</div>';
+    
+    if (!empty($object_description)) {
+      if (strlen($object_description) > 249) {
+        $object_description = substr($object_description, 0, 249) . '...';
+      }
+      $object_print_string .= '<p class="objectdescription">'.$object_description.'</p>';
     }
     
-    // check size of cropped PHM images cf Science Museum ###
-    // get smaller Science Museum images for this layout
-    if ($institution == 'Science Museum') {
-      $image_url = str_replace("/Small/", "/Inline/", $image_url);
-    } 
-    $object_print_string .= '<img class="object_image" src="'. $image_url .'" />';
-    // add licence terms for Powerhouse
-    if ($institution == 'Powerhouse Museum') {
-      $object_print_string .= '<div class="object_image_credit">Thumbnails under license from Powerhouse Museum.</div>';
-    }
+    
 
     // ### add test for date and place not being null and add commas appropriately
     $object_print_string .= '<p class="summary">';
@@ -800,6 +800,11 @@ function mmgPrintObjectBlock($my_object) {
       $object_print_string .= 'Place: '. $interpretative_place . '&nbsp;&nbsp;';
     }
     $object_print_string .= ' (Accession num: '.$accession_number.')</p>';
+  
+      // add licence terms for Powerhouse
+    if ($institution == 'Powerhouse Museum') {
+      $object_print_string .= '<p class="object_image_credit">Image credit: Powerhouse Museum.</p>';
+    }
   
   } 
   
