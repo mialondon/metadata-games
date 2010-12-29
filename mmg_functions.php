@@ -268,7 +268,7 @@ function mmgGetObject($obj_id = null) {
       } 
   }
 
-  if ($random_row_id < 1) { // just in case something went horribly wrong, at least don't die
+  if ($random_row_id < 1) { // just in case something went horribly wrong, at least don't die - but is this test working? It's IDs that are there but don't exist in obj table that kill things
     $get_random_object_sql = "SELECT * FROM $table ORDER BY RAND(NOW()) LIMIT 1";
   } else { // get the full record for that ID and life is good
     $get_random_object_sql = "SELECT * FROM $table WHERE object_id = '$random_row_id' LIMIT 1";  }
@@ -277,14 +277,21 @@ function mmgGetObject($obj_id = null) {
   
   $random_row = $wpdb->get_row ($wpdb->prepare ($get_random_object_sql));
   
+  // if no result, we've run out of objects that you haven't seen yet
+  // or the objects_shown table is referencing objects no longer in the main table
+  if (!$random_row) {
+    $get_random_object_sql = "SELECT * FROM $table ORDER BY RAND(NOW()) LIMIT 1";
+    $random_row = $wpdb->get_row ($wpdb->prepare ($get_random_object_sql));
+  } // hopefully that should do it  
+  
   if ($random_row) {
-    // update wp_mmg_objects_shown with the ID of that object
-    $test_id = $wpdb->get_row ($wpdb->prepare ("SELECT object_id FROM ". table_prefix."objects_shown WHERE object_id = " . $random_row_id . " "));
-    if(is_object($test_id)) {  // then update
+    // check whether it's been shown before
+    $temp_id = $wpdb->get_row ($wpdb->prepare ("SELECT object_id FROM ". table_prefix."objects_shown WHERE object_id = " . $random_row_id . " "));
+    if(is_object($temp_id)) {  // then update
       $wpdb->query( $wpdb->prepare( "
       UPDATE ". table_prefix."objects_shown
       SET show_count = show_count+1
-      WHERE object_id = " . $test_id->object_id . " "
+      WHERE object_id = " . $temp_id->object_id . " "
       ) );  
     } else { // insert as not already there
       $wpdb->query( $wpdb->prepare( "
@@ -293,9 +300,9 @@ function mmgGetObject($obj_id = null) {
       VALUES ( %d, %d)" ,
       array($random_row_id, 1) ) ); 
     }
-  } else { // well, gosh, we've run out of objects that you haven't seen yet
-    echo '<h1>Something went wrong, or you\'ve seen all the objects!  Use the contact form to request more objects or report this error - you might even get a special award for your achievements.</h1>';
-    // echo '<h1>Whoops! My bad, could you please click the link to reload the page?  Terribly sorry about that!</h1>'; // general emergency text, assuming reloading works
+  } else {
+    //echo '<h1>Something went wrong, or you\'ve seen all the objects!  Use the contact form to request more objects or report this error - you might even get a special award for your achievements.</h1>';
+    echo '<h1>Whoops! Something went wrong, please let me know by tweeting @mia_out or emailing me via the contact page. Terribly sorry about that!</h1>'; // general emergency text, assuming reloading works    
   }
 
   return $random_row;
