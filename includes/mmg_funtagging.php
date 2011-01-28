@@ -278,7 +278,7 @@ function mmgDoraGameMarker() {
     }
     $turn_ids = trim($turn_ids, ', ');
     
-    $get_tags_sql = 'SELECT count(tag) as numTags FROM wp_mmg_turn_tags WHERE turn_id IN ('.$turn_ids.')';
+    $get_tags_sql = 'SELECT count(tag) as numTags FROM '. table_prefix. 'turn_tags WHERE turn_id IN ('.$turn_ids.')';
     //echo $get_tags_sql; // +++
     $player_average_tags;
     
