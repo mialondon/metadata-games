@@ -14,4 +14,16 @@ Not included (for now) is the museumobjectsimport script that is used to get dat
 
 (Was called 'matchymatchy' in its very first incarnation)
 
-# to do : document dependencies on other plugins and themes
+Plugins used in the old (2011) version with WordPress 3.0 were:
+contact-form-7/wp-contact-form-7.php 
+cubepoints/cubepoints.php 
+google-analyticator/google-analyticator.php 
+mmg/mmg.php 
+session-manager/session_manager.php 
+share-and-follow/share-and-follow.php 
+theme-my-login/theme-my-login.php 
+wp-db-backup/wp-db-backup.php 
+
+Theme was: Thematic with a child theme
+
+This list needs to be updated after re-development with whatever plugins and themes are still used.
