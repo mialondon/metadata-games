@@ -9,10 +9,10 @@ Author URI: http://openobjects.org.uk
 License: GPL2
 
 */
-/* This version is based on backup from MSc dissertation c Jan 2011 */
+/* This version is based on backup from MSc dissertation c Dec 2013 */
 
 /*
-Copyright (C) 2010 Mia Ridge
+Copyright (C) 2013 Mia Ridge
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -42,7 +42,7 @@ require_once(dirname(__FILE__) . "/includes/mmg_simpletagging.php");
 require_once(dirname(__FILE__) . "/includes/mmg_simplefact.php");
 require_once(dirname(__FILE__) . "/includes/mmg_funtagging.php");
 require_once(dirname(__FILE__) . "/includes/mmg_factseeker.php");
-require_once(dirname(__FILE__) . "/includes/mmg_taghero.php");
+//require_once(dirname(__FILE__) . "/includes/mmg_taghero.php"); // add it back later or refactor dependencies
 require_once(dirname(__FILE__) . "/includes/mmg_reports.php");
 require_once(dirname(__FILE__) . "/includes/mmg_widgets.php");
 
