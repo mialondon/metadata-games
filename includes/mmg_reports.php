@@ -24,7 +24,7 @@ function mmgSiteStats() {
   $results = $wpdb->get_row ($wpdb->prepare ($sql));
 
   if(is_object($results)) {
-    echo 'So far players like you have improved <strong>'. $results->num_objects . ' records</strong> for <strong>2 museums</strong> through games on this site.';
+    echo 'So far players like you have improved <strong>'. $results->num_objects . ' records</strong> for <strong>3 museums and libraries</strong> through games on this site.';
   } 
   
 }
