@@ -2,7 +2,7 @@
 /**
  * Functions for reporting levels of activity and content generated
  * 
- * Copyright (C) 2010 Mia Ridge
+ * Copyright (C) 2013 Mia Ridge
  * 
  * @since 0.2
  * 
