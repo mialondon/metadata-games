@@ -5,7 +5,7 @@
  * Prints the containing div, calls functions necessary to print the object 
  * and forms to the screen
  *  
- * Copyright (C) 2010 Mia Ridge
+ * Copyright (C) 2013 Mia Ridge
  * 
  * @since 0.2
  * 
@@ -24,13 +24,7 @@
 function funtagging() {
 
   echo '<div class="funtagging mmgContent">';
-
-  // check to see if there's a logged in user and add their points if not already saved
-  // move this so it's on every page! +++
-  /*if ( is_user_logged_in() ) {
-    mmgSaveNewUserPoints();
-  }*/
-    
+   
   list($object_id, $object_print_string) = printObject();
   
   // deal with submitted data, if any
@@ -165,7 +159,7 @@ function mmgGetDoraTurnMessages($score) {
     $message .=  '  and you scored <strong>' . $score . '</strong> points.  I\'ve added your object to your collection over on the right.</p><p>'; // ### you have x objects
     
     if ($score <= 5) { // score = 5 - one tag.
-      $message .=  ' <strong>Thank you!</strong>  But you only entered one tag - did you forget to put commas between your tags?  (Like this: \'one, two, three\' not \'one two three\'). Or try this hint - look for variations on words to describe the date or place, or perhaps the colours and materials of the object, what it would be like to use or who might have used it. ';
+      $message .=  ' <strong>Thank you!</strong>  But you only entered one tag - did you forget to put commas between your tags?  (Like this: \'one, two, three\' not \'one two three\'). Or try this hint - look for variations on words to describe the date or place, or perhaps the colours and materials of the object or image, what it would be like to use or who might have used it. ';
     }
   
     // make variant thank you messages, depending on count/random ###
@@ -221,7 +215,7 @@ function mmgGetDoraTurnValidation($object_id, $turn_id) {
     $message = 'Cool! You\'re the first person to tag this object.';
     $site_average = mmgGetSiteTaggingAverages();
     if (!empty($site_average)) {
-      $message .= ' On average, people have added '. $site_average .' tags per go.';
+      $message .= ' On average, people have added '. $site_average .' tags per turn.';
     }    
   }
   
