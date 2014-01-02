@@ -456,8 +456,9 @@ function drawCompletionBox($game_code) {
     }
   } else {  // 'no results yet';
     $tc = 5;
+    echo '>';
     while ($tc > 0) { // fill empty cells with '?' to encourage filling
-      echo '><td><span class="next_box">?</span></td>'; 
+      echo '<td><span class="next_box">?</span></td>'; 
       $tc = $tc-1;
     }
   }
