@@ -3,15 +3,16 @@
 Plugin Name: mmg
 Plugin URI: http://www.museumgames.org.uk/
 Description: mmg is a plugin for a set of metadata games based around museum collections (games that help improve digitised museum collections) 
-Version: 0.1
+Version: 0.3.1
 Author: Mia Ridge
 Author URI: http://openobjects.org.uk
 License: GPL2
 
 */
+/* This version is based on backup from MSc dissertation c Dec 2013 */
 
 /*
-Copyright (C) 2010 Mia Ridge
+Copyright (C) 2013 Mia Ridge
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -28,6 +29,38 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
+
+// ### Add as plugin config setting so it's generalisable. Also db name, not just table names
+if ($_SERVER['HTTP_HOST'] == 'localhost' || $_SERVER['HTTP_HOST'] == 'www.museumgames.org.uk' || $_SERVER['HTTP_HOST'] == 'museumgames.org.uk') {
+  define("table_prefix", "wp_mmg_");
+} elseif ($_SERVER['HTTP_HOST'] == 'www.museumgam.es' || $_SERVER['HTTP_HOST'] == 'museumgam.es')  {
+  define("table_prefix", "wplive_mmg_");
+}
+
+// include the game-specific files
+require_once(dirname(__FILE__) . "/includes/mmg_simpletagging.php");
+require_once(dirname(__FILE__) . "/includes/mmg_simplefact.php");
+require_once(dirname(__FILE__) . "/includes/mmg_funtagging.php");
+require_once(dirname(__FILE__) . "/includes/mmg_factseeker.php");
+//require_once(dirname(__FILE__) . "/includes/mmg_taghero.php"); // add it back later or refactor dependencies
+require_once(dirname(__FILE__) . "/includes/mmg_reports.php");
+require_once(dirname(__FILE__) . "/includes/mmg_widgets.php");
+
+// these should really be made into config options ### @todo
+define('MMG_IMAGE_URL',  WP_CONTENT_URL.'/plugins/'. basename(dirname(__FILE__)) . '/includes/images/');
+define('MMG_PLUGIN_URL',  WP_PLUGIN_URL.'/includes/'. basename(dirname(__FILE__)));
+define("FACTSCORE", "250");
+define("TAGSCORE", "5");
+define("PATH_TO_TAGHERO_PAGE", WP_CONTENT_URL. "/taghero/"); // path to page with Tag Hero game shortcode, from WordPress root
+define("PATH_TO_DONALD_PAGE", WP_CONTENT_URL. "/donald/"); // path to page with Donald game shortcode, from WordPress root
+define("PATH_TO_DORA_PAGE", WP_CONTENT_URL. "/dora/"); // path to page with Donald game shortcode, from WordPress root
+define("PATH_TO_UGCREPORTS_PAGE", WP_CONTENT_URL. "/content-added-so-far/"); // path to page with Donald game shortcode, from WordPress root
+
+/* for live */
+// define("PATH_TO_DONALD_PAGE", "/donald/"); // path to page with Donald game shortcode, from WordPress root
+// define("PATH_TO_DORA_PAGE", "/dora/"); // path to page with Donald game shortcode, from WordPress root
+// define("PATH_TO_UGCREPORTS_PAGE", "/content-added-so-far/"); // path to page with Donald game shortcode, from WordPress root
+
 
 /////////// set up activation and deactivation stuff
 register_activation_hook(__FILE__,'mmg_install');
@@ -141,8 +174,6 @@ function mmg_settings_page() {
 <?php settings_fields('mmg-settings-group'); ?>
 <?php _e('Game length (seconds)','mmg-plugin') ?> 
 
-<?php /* old way of registering a single field <input type="text" name="mmg_option_game_length" value="<?php echo get_option('mmg_option_game_length'); ?>"> */ ?>
-
 <?php mmg_setting_game_length(); ?>
 
 <p class="submit"><input type="submit" class="button-primary" value=<?php _e('Save changes', 'mmg-plugin') ?> /></p>
@@ -165,23 +196,44 @@ function mmg_setting_game_length() {
 
 /////////// set up shortcode
 // Sample: [mmgame gametype=simpletagging]
+/*
+ *
+ * Not sure if I should include mmgSaveNewUserPoints() here but as it's called each time there's
+ * a shortcode (ie we're on a game page), maybe it's the best place for it
+ * 
+ */
 function gameShortCode($atts, $content=null) {
-  // do stuff, probably by calling other functions depending on what params are added
-  // explode attributes array
   
   if(@is_file(ABSPATH.'/wp-content/plugins/mmg/mmg_functions.php')) {
       include_once(ABSPATH.'/wp-content/plugins/mmg/mmg_functions.php'); 
   }
   
-  extract(shortcode_atts(array(
+  // testing this here
+  if ( is_user_logged_in() ) {
+    mmgSaveNewUserPoints();
+  }
+  
+  extract(shortcode_atts(array( // lowercase cos the short tags are, elsewhere camel.
   "gametype" => 'simpletagging' // default
   ), $atts));
   if ($gametype == 'simplefacts') {
     simpleFacts();
+  } elseif ($gametype == 'funtagging') {
+    funtagging();
+  } elseif ($gametype == 'factseeker') { // Dec 14 - using mmgFactseekerChoice until have versions on shortcodes
+    mmgFactseekerChoice();
+    // factseeker();
+  } elseif ($gametype == 'objectugcreport') {
+    mmgListObjectUGC(); 
+  } elseif ($gametype == 'taghero') {
+    taghero();
   } else {
     // simple tag game as default
     simpleTagging();
   }
+  
+  $GLOBALS['my_game_code'] = $gametype; // so it's accessible in the widget
+
 }
 
 // Add the shortcode
@@ -189,7 +241,7 @@ add_shortcode('mmgame', 'gameShortCode');
 
 /* adding a filter for object ID and gamecode so players can return via a link */
 function parameter_objID($oVars) {
-    $oVars[] = "obj_ID";    // represents the name of the product category as shown in the URL
+    $oVars[] = "obj_ID"; 
     return $oVars;
 }
 
@@ -197,9 +249,180 @@ function parameter_objID($oVars) {
 add_filter('query_vars', 'parameter_objID');
 
 function parameter_gamecode($gVars) {
-    $gVars[] = "gamecode";    // represents the name of the product category as shown in the URL
+    $gVars[] = "gamecode";    // not used?
     return $gVars;
 }
 add_filter('query_vars', 'parameter_gamecode');
 
+/* adding a filter for skipped object ID */
+function parameter_skippedID($oVars) {
+    $oVars[] = "skipped_ID"; 
+    return $oVars;
+}
+add_filter('query_vars', 'parameter_skippedID');
+
+/* adding a filter for skipped object ID */
+function parameter_reporttype($oVars) {
+    $oVars[] = "report"; 
+    return $oVars;
+}
+add_filter('query_vars', 'parameter_reporttype');
+
+/* game ID for Tag Hero players */
+/* gameID is the unique ID for a particular game setup based on session ID from originating player */
+function parameter_gamesessionID($oVars) {
+    $oVars[] = "gamesession_ID"; 
+    return $oVars;
+}
+add_filter('query_vars', 'parameter_gamesessionID');
+
+
+/* for Tag Hero tag quality scores */
+/* gametagID is the unique ID of a tag from a player within a game */
+function parameter_gametagID($oVars) {
+    $oVars[] = "gametag_ID"; 
+    return $oVars;
+}
+add_filter('query_vars', 'parameter_gametagID');
+
+/* repeating the tag returned from the tag quality web service for verification (and laziness) */
+function parameter_tag($oVars) {
+    $oVars[] = "tag"; 
+    return $oVars;
+}
+add_filter('query_vars', 'parameter_tag');
+
+/* tag quality score from web service */
+function parameter_tag_score($oVars) {
+    $oVars[] = "tag_score"; 
+    return $oVars;
+}
+add_filter('query_vars', 'parameter_tag_score');
+/* end Tag Hero-specific stuff */
+
+
+// add widget, trying smashing book method this time
+class mmgHello extends WP_Widget {
+  
+  function mmgHello() {
+  parent::WP_Widget(false, $name = 'mmg Hello');
+  }
+  
+  function widget($args, $instance) {
+  extract( $args );
+  ?>
+    <?php echo $before_widget; ?>
+      <?php echo $before_title
+        . $instance['title'] // will be settable by widget users
+        . $after_title; ?>
+                        <?php if (!empty ($GLOBALS['my_game_code'])) {
+                         drawCompletionBox($GLOBALS['my_game_code']);
+                        }
+                        // experiment
+                        //mmgGetRandomGamePage(); // ###
+                        ?>
+    <?php echo $after_widget; ?>
+  <?php
+  }
+  
+  function update($new_instance, $old_instance) {
+  return $new_instance;
+  }
+  
+  // use something like this to trap for nasties on the way into the update function
+  // $instance['music'] = strip_tags( $new_instance['music'] );
+  
+/* Users can't set the title, so commenting this out for now.
+   function form($instance) {
+  $title = esc_attr($instance['title']);
+  ?>
+          <p>
+            <label for="<?php echo $this->get_field_id('title'); ?>">Title: <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" /></label>
+          </p>
+  <?php
+  } */
+}
+
+add_action('widgets_init', create_function('', 'return register_widget("mmgHello");'));
+
+/*
+ * Adding login widget
+ * To Do: change header message depending on whether user is logged in
+ * Picks up some of the things that Theme My Login doesn't do, like showing profile and logout link
+ *
+*/
+class mmgLoginWidget extends WP_Widget {
+  
+  function mmgLoginWidget() {
+  parent::WP_Widget(false, $name = 'mmg login widget');
+  }
+  
+  function widget($args, $instance) {
+    extract( $args );
+      ?>
+  <?php if ( is_user_logged_in() ) { // only show if the user is logged in
+        echo $before_widget; ?>
+    <?php echo $before_title;
+          if (!empty($instance['title'])) {
+            echo $instance['title']; // if settable by widget users
+          } else {
+            echo 'Manage your account';
+          }
+  echo $after_title; ?>
+        <?php  ?><ul><li>
+        <a href="<?php echo wp_logout_url( get_permalink() ); ?>" title="Logout">Logout</a>  
+        </li></ul>
+        <?php echo $after_widget; ?>
+  <?php }
+  }
+  
+  function update($new_instance, $old_instance) {
+  return $new_instance;
+  }
+
+}
+
+add_action('widgets_init', create_function('', 'return register_widget("mmgLoginWidget");'));
+
+
+/*
+ * Displays user scores by game, even if they're not registeret yet
+ *
+*/
+class mmgScoreWidget extends WP_Widget {
+  
+  function mmgScoreWidget() {
+  parent::WP_Widget(false, $name = 'mmg score widget');
+  }
+  
+  function widget($args, $instance) {
+    extract( $args );
+      ?>
+  <?php echo $before_widget; ?>
+    <?php echo $before_title;
+          if (!empty($instance['title'])) {
+            echo $instance['title']; // if settable by widget users
+          } else {
+            echo 'Your score for this game:';
+          }
+  echo $after_title; ?>
+        <?php if (!empty ($GLOBALS['my_game_code'])) {
+                  $scoreString = mmgGetUserScoreByGame();
+                  echo $scoreString;
+              }
+              if (!is_user_logged_in() ) {
+                echo 'Login or register to save your points';
+              }
+        ?>
+    <?php echo $after_widget; ?>
+  <?php
+  }
+  
+  function update($new_instance, $old_instance) {
+  return $new_instance;
+  }
+
+}
+
+add_action('widgets_init', create_function('', 'return register_widget("mmgScoreWidget");'));
 ?>
