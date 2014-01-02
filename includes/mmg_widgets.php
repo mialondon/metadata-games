@@ -5,11 +5,13 @@
  * File information:
  * Holds widgets for player and site-wide scores, completion box
  * Uses reports from mmg_reports.php
+ *
+ * Dec 2013: ### Check that this actually does anything
  * 
  */
 
 /*
- * Copyright (C) 2010 Mia Ridge
+ * Copyright (C) 2013 Mia Ridge
  */
 
 /*

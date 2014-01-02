@@ -44,6 +44,7 @@ function printObject() {
     $interpretative_place = urldecode($turn_object->interpretative_place);
     $accession_number = urldecode($turn_object->accession_number);
     $object_id = urldecode($turn_object->object_id);
+    $object_description = urldecode($turn_object->description);
    
 
     $object_print_string;
@@ -55,10 +56,16 @@ function printObject() {
     } else {
       // use the description instead
       $object_print_string = '<h2 class="noobjectname"><a name="object">[untitled]</a></h2>';
-      $object_print_string .= '<p class="objectdescription">'.urldecode($turn_object->description).'</p>';
+      $object_print_string .= '<p class="objectdescription">'.$object_description.'</p>';
     }
     
     // ### add test for date and place not being null and add commas appropriately
+
+    # if it's a British Library Commons image, include a description for further context
+    if ($institution = 'British Library on Flickr Commons') {
+      $object_print_string .= '<p class="objectdescription">'.$object_description.'</p>';
+    }
+
     $object_print_string .= '<p class="source">';
     if ($source_display_url != '') {
       $object_print_string .= 'View <a href="'.$source_display_url.'" target="_blank">object on the '.$institution.' site</a> (opens in new window).';
@@ -450,7 +457,7 @@ function drawCompletionBox($game_code) {
   } else {  // 'no results yet';
     $tc = 5;
     while ($tc > 0) { // fill empty cells with '?' to encourage filling
-      echo '<td><span class="next_box">?</span></td>'; 
+      echo '><td><span class="next_box">?</span></td>'; 
       $tc = $tc-1;
     }
   }
