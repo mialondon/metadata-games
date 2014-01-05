@@ -33,7 +33,7 @@ function funtagging() {
   } else { // is first load or possibly after a skipped object ###
    echo '<div class="messages">';
    echo '<p><img src="'. MMG_IMAGE_URL . 'Dora_pensive.gif" align="left"> "Hi, my name is Dora, and I\'m a junior curator.  It\'s my first day and I\'ve made a big mistake - I accidentally deleted all the information we were going to add to our collections online.  I need to re-label them, and quickly...</p>';
-   echo '<p>Can you help?  <strong>Add words about the thing in the picture that would help someone find it on Google</strong> - how it looks, what does, who might have used it - anything you can think of."</p>';
+   echo '<p>Can you help?  <strong>Add words about the thing in the picture that would help someone find it on Google</strong> - how it looks, what it does, who might have used it - anything you can think of."</p>';
    echo '</div>';   
   }
   
@@ -97,7 +97,7 @@ function mmgGetTurnCount() {
   
   // get how many turns they've had in this session for feedback
   $sql = "SELECT count(session_id) as num_turns FROM " . table_prefix . "turns WHERE session_id = '". ($_COOKIE['PHPSESSID']) ."' AND game_code = 'funtagging'"; 
-  $results = $wpdb->get_row ($wpdb->prepare ($sql));
+  $results = $wpdb->get_row ($wpdb->prepare ($sql)); // ###update this
   
   if (is_object($results)) {
     $count = $results->num_turns;
@@ -199,7 +199,7 @@ function mmgGetDoraTurnValidation($object_id, $turn_id) {
   global $wpdb;
 
   $sql = "SELECT turn_id, tag, count(tag) as numTags FROM ". table_prefix. "turn_tags ". table_prefix. "objects WHERE object_id = '". $object_id ."' AND turn_id != '". $turn_id ."' GROUP BY tag ORDER BY numTags DESC"; // get number of times a tag was used too
-  $results = $wpdb->get_results($wpdb->prepare ($sql));
+  $results = $wpdb->get_results($wpdb->prepare ($sql)); // ### update this
   
   if ($results) { // have specific UGC for that object
     $message = 'Other people added these tags for the same object (the number of times is in brackets): ';
@@ -232,8 +232,10 @@ function mmgGetSiteTaggingAverages() {
   
   $sqlTurns = "select count(turn_id) as numTurns from ". table_prefix. "turns WHERE game_code = 'funtagging'"; 
   $sqlTags = "select count(tag) as numTags from ". table_prefix. "turn_tags"; 
-  $resultTurns = $wpdb->get_var($wpdb->prepare ($sqlTurns));
-  $resultsTags = $wpdb->get_var($wpdb->prepare ($sqlTags));
+  $resultTurns = $wpdb->get_var($sqlTurns);
+ // $resultTurns = $wpdb->get_var($wpdb->prepare ($sqlTurns));
+  $resultsTags = $wpdb->get_var($sqlTags);  
+ // $resultsTags = $wpdb->get_var($wpdb->prepare ($sqlTags));
   $site_average = $resultsTags / $resultTurns;
   
   $site_average = round($site_average, 1);
@@ -265,7 +267,7 @@ function mmgDoraGameMarker() {
   } 
   $sql .= ' ORDER BY turn_id DESC LIMIT 5' ;
   //echo $sql; // +++
-  $last_turn_ids = $wpdb->get_results($wpdb->prepare ($sql));
+  $last_turn_ids = $wpdb->get_results($wpdb->prepare ($sql)); // ### update this
   if ($last_turn_ids) { // get number of tags over the last five turns
     foreach($last_turn_ids as $result) {
       $turn_ids .= $result->turn_id. ' ,';
@@ -276,7 +278,7 @@ function mmgDoraGameMarker() {
     //echo $get_tags_sql; // +++
     $player_average_tags;
     
-    $game_results = $wpdb->get_var($wpdb->prepare ($get_tags_sql));
+    $game_results = $wpdb->get_var($wpdb->prepare ($get_tags_sql)); // ### update this
     if ($game_results) {
       $numTags = $game_results;
       $player_average_tags = $numTags/5;
