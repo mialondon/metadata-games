@@ -232,7 +232,7 @@ function mmgGetObject($obj_id = null) {
   $sql = mmgSQLObjectsByUser('');
   //echo '<h1>from mmgsqlobjectsbyuser: '. $sql . '</h1>'; // +++
   if (!empty($sql)) { // there's a session or username
-    $user_objects = $wpdb->get_results ($wpdb->prepare ($sql));  
+    $user_objects = $wpdb->get_results ($sql);  
     if ($user_objects) { // if query returns results
       foreach ($user_objects as $user_object) {
         $exclude_ids .= $user_object->object_id.', ';
@@ -416,7 +416,7 @@ function drawCompletionBox($game_code) {
   // number of objects tagged
   $sql = mmgSQLObjectsByUser($game_code);
   
-  $results = $wpdb->get_results($wpdb->prepare ($sql));
+  $results = $wpdb->get_results($sql);
 
   echo '<table border="0" class="completion_box" width="280" cellpadding="0" cellspacing="0"><tr';
 
@@ -668,7 +668,7 @@ function mmgGetUserScoreByGame() {
       $sql = "SELECT sum(turn_score) as player_score FROM ". table_prefix."turns WHERE game_code = '".$GLOBALS['my_game_code']."' AND wp_username = '". $current_user->user_login ."' ";  
     }
   
-    $results = $wpdb->get_row ($wpdb->prepare ($sql));
+    $results = $wpdb->get_row($sql);
 
     if(is_object($results)) {
       if ($results->player_score > 0) {
