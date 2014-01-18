@@ -708,10 +708,7 @@ function mmgSaveNewUserPoints() {
     if ($current_user_score <= 0) { // no points recorded in cubepoints yet
   
     // get their total score from the turns table
-    $sql = ;
-    $results = $wpdb->get_row ($wpdb->prepare ("
-      SELECT sum(turn_score) as player_score FROM ". table_prefix."turns WHERE session_id = '%d' ", $session_id
-      ));
+    $results = $wpdb->get_row ($wpdb->prepare ("SELECT sum(turn_score) as player_score FROM ". table_prefix."turns WHERE session_id = '%d' ", $session_id ));
 // temp while updating prepare
 // $sql = "SELECT sum(turn_score) as player_score FROM ". table_prefix."turns WHERE session_id = '". $session_id ."' ";    
 
