@@ -9,7 +9,7 @@ Author URI: http://openobjects.org.uk
 License: GPL2
 
 */
-/* This version is based on backup from MSc dissertation c Dec 2013 */
+/* This version is based on backup from MSc dissertation c Dec 2010 */
 
 /*
 Copyright (C) 2013 Mia Ridge

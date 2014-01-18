@@ -201,7 +201,7 @@ function mmgGetObject($obj_id = null) {
   global $wpdb;
   
   if(!empty($obj_id)) { // get a specific object if requested
-    $row = $wpdb->get_row ($wpdb->prepare ("SELECT * FROM ". table_prefix."objects WHERE object_id = $obj_id LIMIT 1"));
+    $row = $wpdb->get_row ("SELECT * FROM ". table_prefix."objects WHERE object_id = $obj_id LIMIT 1");
   } else {
     $row = randomRow(table_prefix.'objects', 'object_id'); // get from view that doesn't include shown objects
   }
@@ -232,7 +232,7 @@ function mmgGetObject($obj_id = null) {
   $sql = mmgSQLObjectsByUser('');
   //echo '<h1>from mmgsqlobjectsbyuser: '. $sql . '</h1>'; // +++
   if (!empty($sql)) { // there's a session or username
-    $user_objects = $wpdb->get_results ($wpdb->prepare ($sql));  
+    $user_objects = $wpdb->get_results ($sql);  
     if ($user_objects) { // if query returns results
       foreach ($user_objects as $user_object) {
         $exclude_ids .= $user_object->object_id.', ';
@@ -256,7 +256,7 @@ function mmgGetObject($obj_id = null) {
   }  
   $random_row_sql .= " ORDER BY RAND(NOW()) LIMIT 1"; // 
   //echo $random_row_sql;
-  $random_row = $wpdb->get_row ($wpdb->prepare ($random_row_sql));
+  $random_row = $wpdb->get_row ($random_row_sql);
   
   if ($random_row) { // then object that hasn't been shown before exists
     $random_row_id = $random_row->object_id;
@@ -268,37 +268,36 @@ function mmgGetObject($obj_id = null) {
       }
       $random_row_sql .= "ORDER BY show_count ASC, RAND(NOW()) LIMIT 1";
       // echo '<h1>from $random_row_sql in objects shown before : '. $random_row_sql . '</h1>'; // +++
-      $random_row = $wpdb->get_row ($wpdb->prepare ($random_row_sql)); 
+      $random_row = $wpdb->get_row ($random_row_sql); 
       if ($random_row) {
         $random_row_id = $random_row->object_id;
       } 
   }
 
-  if ($random_row_id < 1) { // just in case something went horribly wrong, at least don't die - but is this test working? It's IDs that are there but don't exist in obj table that kill things
+  if ($random_row_id < 1) { // just in case something went horribly wrong, at least don't die - but is this test working? It's IDs that are there but don't exist in obj table that kill things ###
     $get_random_object_sql = "SELECT * FROM $table ORDER BY RAND(NOW()) LIMIT 1";
   } else { // get the full record for that ID and life is good
     $get_random_object_sql = "SELECT * FROM $table WHERE object_id = '$random_row_id' LIMIT 1";  }
   
   // echo $get_random_object_sql; // uncomment if 'seen all the objects' message shows
   
-  $random_row = $wpdb->get_row ($wpdb->prepare ($get_random_object_sql));
+  $random_row = $wpdb->get_row ($get_random_object_sql);
   
   // if no result, we've run out of objects that you haven't seen yet
   // or the objects_shown table is referencing objects no longer in the main table
   if (!$random_row) {
     $get_random_object_sql = "SELECT * FROM $table ORDER BY RAND(NOW()) LIMIT 1";
-    $random_row = $wpdb->get_row ($wpdb->prepare ($get_random_object_sql));
+    $random_row = $wpdb->get_row ($get_random_object_sql);
   } // hopefully that should do it  
   
   if ($random_row) {
     // check whether it's been shown before
-    $temp_id = $wpdb->get_row ($wpdb->prepare ("SELECT object_id FROM ". table_prefix."objects_shown WHERE object_id = " . $random_row_id . " "));
+    $temp_id = $wpdb->get_row ($wpdb->prepare ("SELECT object_id FROM ". table_prefix."objects_shown WHERE object_id = %d", $random_row_id));
     if(is_object($temp_id)) {  // then update
       $wpdb->query( $wpdb->prepare( "
       UPDATE ". table_prefix."objects_shown
       SET show_count = show_count+1
-      WHERE object_id = " . $temp_id->object_id . " "
-      ) );  
+      WHERE object_id = %d", $temp_id->object_id) );  
     } else { // insert as not already there
       $wpdb->query( $wpdb->prepare( "
       INSERT INTO ". table_prefix."objects_shown 
@@ -330,7 +329,7 @@ function saveTurn($game_code) {
   global $current_user;
  
   // prepare data
-  $object_id = $wpdb->prepare($_POST['object_id'] );
+  $object_id = $_POST['object_id'];
   // game code, game version
   $session_id = ($_COOKIE['PHPSESSID']); 
   $ip_address = $_SERVER['REMOTE_ADDR'];
@@ -417,7 +416,7 @@ function drawCompletionBox($game_code) {
   // number of objects tagged
   $sql = mmgSQLObjectsByUser($game_code);
   
-  $results = $wpdb->get_results($wpdb->prepare ($sql));
+  $results = $wpdb->get_results($sql);
 
   echo '<table border="0" class="completion_box" width="280" cellpadding="0" cellspacing="0"><tr';
 
@@ -517,11 +516,11 @@ function saveFact($turn_id) {
   global $wpdb;
 //  global $my_plugin_table; // ### should set this up
     
-  $tags = $wpdb->prepare($_POST['tags'] );
-  $object_id = $wpdb->prepare($_POST['object_id'] );
-  $fact_headline = $wpdb->prepare($_POST['fact_headline'] );
-  $fact_summary = $wpdb->prepare($_POST['fact_summary'] );
-  $fact_source = $wpdb->prepare($_POST['fact_source'] ); 
+  //$tags = $_POST['tags']; // Not needed!
+  $object_id = $_POST['object_id'];
+  $fact_headline = $_POST['fact_headline'];
+  $fact_summary = $_POST['fact_summary'];
+  $fact_source = $_POST['fact_source']; 
   
   echo '<p class="turn_results">You added fact: '.$_POST['fact_summary'].'</p>';
   
@@ -545,11 +544,11 @@ function saveFactWithScores($turn_id) {
     // do stuff
   global $wpdb;
      
-  $tags = $wpdb->prepare($_POST['tags'] );
-  $object_id = $wpdb->prepare($_POST['object_id'] );
-  $fact_headline = $wpdb->prepare($_POST['fact_headline'] );
-  $fact_summary = $wpdb->prepare($_POST['fact_summary'] );
-  $fact_source = $wpdb->prepare($_POST['fact_source'] ); 
+  //$tags = $_POST['tags']; // Not needed!
+  $object_id = $_POST['object_id'];
+  $fact_headline = $_POST['fact_headline'];
+  $fact_summary = $_POST['fact_summary'];
+  $fact_source = $_POST['fact_source']; 
   
   //echo '<p class="turn_results">You added fact: '.$_POST['fact_summary'] .' and you scored ' . $score . ' points!</p>';
   
@@ -562,9 +561,9 @@ function saveFactWithScores($turn_id) {
   // update the turn table with their score
   $wpdb->query( $wpdb->prepare( "
   UPDATE ". table_prefix."turns
-  SET turn_score = " . FACTSCORE . "
-  WHERE turn_id = " . $turn_id . " "
-  ) );   
+  SET turn_score = %d 
+  WHERE turn_id = %d" . $turn_id . " "
+  ), FACTSCORE, $turn_id );   
     
     cp_alterPoints( cp_currentUser(), FACTSCORE); 
      
@@ -573,8 +572,8 @@ function saveFactWithScores($turn_id) {
 function saveTagsWithScores($turn_id) { 
 
   global $wpdb;
-  $tags = $wpdb->prepare($_POST['tags'] );
-  $object_id = $wpdb->prepare($_POST['object_id'] );  
+  $tags = $_POST['tags'];
+  $object_id = $_POST['object_id'];  
     
   // find out how many tags submitted (for the score)
   // remove extra , from the end first
@@ -599,9 +598,11 @@ function saveTagsWithScores($turn_id) {
   // update the turn table with their score
   $wpdb->query( $wpdb->prepare( "
   UPDATE ". table_prefix."turns
-  SET turn_score = " . $score . "
-  WHERE turn_id = " . $turn_id . " "
-  ) );   
+  SET turn_score = %s 
+  WHERE turn_id = %d ", $score, $turn_id ) );   
+//  SET turn_score = " . $score . "
+//  WHERE turn_id = " . $turn_id . " "
+//  ) ); 
   
   echo '<div class="messages">';
   $response_string = mmgGetDoraTurnMessages($score);
@@ -628,13 +629,12 @@ function mmgUpdateSkipped($skipped_ID) {
   global $wpdb;
 
   // update wp_mmg_objects_shown with the ID of that object
-  $test_id = $wpdb->get_row ($wpdb->prepare ("SELECT object_id FROM ". table_prefix."objects_shown WHERE object_id = " . $skipped_ID . " "));
+  $test_id = $wpdb->get_row ($wpdb->prepare ("SELECT object_id FROM ". table_prefix."objects_shown WHERE object_id = %d", $skipped_ID ));
   if(is_object($test_id)) {  // then update
     $wpdb->query( $wpdb->prepare( "
     UPDATE ". table_prefix."objects_shown
     SET skip_count = skip_count+1
-    WHERE object_id = " . $skipped_ID . " "
-    ) );  
+    WHERE object_id = %d", $skipped_ID ));
   } else { // insert as not already there
     $wpdb->query( $wpdb->prepare( "
     INSERT INTO ". table_prefix."objects_shown 
@@ -647,7 +647,7 @@ function mmgUpdateSkipped($skipped_ID) {
 
 
 /* add function documentation ###
- * needs to be updated to get scores by username or session id ###
+ * Gets scores by username or session id 
  * ie if user is logged in then by username otherwise by session with message to sign up
  *
  * @uses $wpdb, $current_user;
@@ -662,11 +662,12 @@ function mmgGetUserScoreByGame() {
     // number of objects tagged
     if (!is_user_logged_in() ) {
       $sql = "SELECT sum(turn_score) as player_score FROM ". table_prefix."turns WHERE game_code = '".$GLOBALS['my_game_code']."' AND session_id = '". ($_COOKIE['PHPSESSID']) ."' ";
+
     } else {
       $sql = "SELECT sum(turn_score) as player_score FROM ". table_prefix."turns WHERE game_code = '".$GLOBALS['my_game_code']."' AND wp_username = '". $current_user->user_login ."' ";  
     }
   
-    $results = $wpdb->get_row ($wpdb->prepare ($sql));
+    $results = $wpdb->get_row($sql);
 
     if(is_object($results)) {
       if ($results->player_score > 0) {
@@ -698,16 +699,19 @@ function mmgSaveNewUserPoints() {
   $session_id = ($_COOKIE['PHPSESSID']);
   
   // update their previous turn rows now that they have a username
-    $wpdb->query( $wpdb->prepare( "UPDATE ". table_prefix."turns SET wp_username = '" .$current_user->user_login . "' WHERE session_id = '". $session_id ."' "
-    ) );  
+    $wpdb->query( $wpdb->prepare( "UPDATE ". table_prefix."turns SET wp_username = '%s' WHERE session_id = '%d' " // hmm
+    ), $current_user->user_login, $session_id );  
 
   // check that we haven't registered their score already by testing cubepoints score
   $current_user_score = (int) cp_displayPoints($current_user->ID, 1, 0);
     if ($current_user_score <= 0) { // no points recorded in cubepoints yet
   
     // get their total score from the turns table
-    $sql = "SELECT sum(turn_score) as player_score FROM ". table_prefix."turns WHERE session_id = '". $session_id ."' ";
-    $results = $wpdb->get_row ($wpdb->prepare ($sql));
+    $results = $wpdb->get_row ($wpdb->prepare ("SELECT sum(turn_score) as player_score FROM ". table_prefix."turns WHERE session_id = '%d' ", $session_id ));
+// temp while updating prepare
+// $sql = "SELECT sum(turn_score) as player_score FROM ". table_prefix."turns WHERE session_id = '". $session_id ."' ";    
+
+    
   
     if(is_object($results)) {
       $score = $results->player_score;
