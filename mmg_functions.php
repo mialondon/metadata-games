@@ -634,7 +634,7 @@ function mmgUpdateSkipped($skipped_ID) {
     $wpdb->query( $wpdb->prepare( "
     UPDATE ". table_prefix."objects_shown
     SET skip_count = skip_count+1
-    WHERE object_id = %d", $skipped_ID ));
+    WHERE object_id = %d ", $skipped_ID ));
   } else { // insert as not already there
     $wpdb->query( $wpdb->prepare( "
     INSERT INTO ". table_prefix."objects_shown 
@@ -699,8 +699,7 @@ function mmgSaveNewUserPoints() {
   $session_id = ($_COOKIE['PHPSESSID']);
   
   // update their previous turn rows now that they have a username
-    $wpdb->query( $wpdb->prepare( "UPDATE ". table_prefix."turns SET wp_username = '%s' WHERE session_id = '%d' " // hmm
-    ), $current_user->user_login, $session_id );  
+    $wpdb->query( $wpdb->prepare( "UPDATE ". table_prefix."turns SET wp_username = '%s' WHERE session_id = '%d' ", $current_user->user_login, $session_id ) );  // hmm re ''
 
   // check that we haven't registered their score already by testing cubepoints score
   $current_user_score = (int) cp_displayPoints($current_user->ID, 1, 0);
