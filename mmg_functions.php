@@ -629,13 +629,12 @@ function mmgUpdateSkipped($skipped_ID) {
   global $wpdb;
 
   // update wp_mmg_objects_shown with the ID of that object
-  $test_id = $wpdb->get_row ($wpdb->prepare ("SELECT object_id FROM ". table_prefix."objects_shown WHERE object_id = " . $skipped_ID . " "));
+  $test_id = $wpdb->get_row ($wpdb->prepare ("SELECT object_id FROM ". table_prefix."objects_shown WHERE object_id = %d", $skipped_ID ));
   if(is_object($test_id)) {  // then update
     $wpdb->query( $wpdb->prepare( "
     UPDATE ". table_prefix."objects_shown
     SET skip_count = skip_count+1
-    WHERE object_id = " . $skipped_ID . " "
-    ) );  
+    WHERE object_id = %d", $skipped_ID ));
   } else { // insert as not already there
     $wpdb->query( $wpdb->prepare( "
     INSERT INTO ". table_prefix."objects_shown 
