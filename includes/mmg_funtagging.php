@@ -174,7 +174,7 @@ function mmgGetDoraTurnMessages($score) {
       $message .= ' Can you tag another? '; 
     } 
     if ($num_turns == 2 ) { // random message
-      $message .= " Don't feel you have to use fancy words - everyday language is just what we need to help other visitors find these objects. ";
+      $message .= " You don't have to use fancy words - everyday language is just what we need to help other visitors find these objects. ";
     }
     if ($num_turns % 3 == 0 && $num_turns % 2 != 0 ) { // random message
       $message .= ' Can you tag five objects to fill a row?  ';
@@ -267,7 +267,7 @@ function mmgDoraGameMarker() {
   } 
   $sql .= ' ORDER BY turn_id DESC LIMIT 5' ;
   //echo $sql; // +++
-  $last_turn_ids = $wpdb->get_results($wpdb->prepare ($sql)); // ### update this
+  $last_turn_ids = $wpdb->get_results($sql); 
   if ($last_turn_ids) { // get number of tags over the last five turns
     foreach($last_turn_ids as $result) {
       $turn_ids .= $result->turn_id. ' ,';
@@ -278,7 +278,7 @@ function mmgDoraGameMarker() {
     //echo $get_tags_sql; // +++
     $player_average_tags;
     
-    $game_results = $wpdb->get_var($wpdb->prepare ($get_tags_sql)); // ### update this
+    $game_results = $wpdb->get_var($get_tags_sql); 
     if ($game_results) {
       $numTags = $game_results;
       $player_average_tags = $numTags/5;
