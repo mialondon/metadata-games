@@ -100,7 +100,7 @@ function mmgListObjectUGC() {
       }
     
   } else { // no parameter
-    echo '<h2>A list of objects with data created by players</h2><p>Follow a link to see what\'s been added for that object so far.  (At the moment it\'s by internal ID, not museum or accession number - sorry!  Also, some of the content is test content - I will be tidying that up.  If you see anything objectionable, let me know via the Contact page.)</p>';
+    echo '<h2>The objects listed below have data created by players</h2><p>Follow a link to see what\'s been added for that object so far.  If you see anything objectionable, report it!</p>';
     $sql = "SELECT count( object_id ) AS numUGC, object_id FROM ". table_prefix."turns GROUP BY object_id ORDER BY numUGC DESC";
     $results = $wpdb->get_results($sql);
     

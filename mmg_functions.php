@@ -12,7 +12,12 @@ Copyright (C) 2013 Mia Ridge
 */
 
 /**
- * Gets either a random object or a requested object, prints it to screen
+ * Gets either a random object or a requested object, returns formatted text with the relevant
+ * institution, image, source display url, interpretative date, interpretative place, accession number,
+ * internal object ID and object description. Contains some customisations for quirks in images or data
+ * for particular institutions.
+ * 
+ * Also deals with skipped objects based on the call from the previous page, updating the skipped count
  * 
  * Arguments: none (but it does access URL params)
  * Return values: object ID
@@ -45,18 +50,20 @@ function printObject() {
     $accession_number = urldecode($turn_object->accession_number);
     $object_id = urldecode($turn_object->object_id);
     $object_description = urldecode($turn_object->description);
-   
 
     $object_print_string;
+ 
+	// start schema.org CreativeWork div here
+	$object_print_string = '<div itemscope itemtype="http://schema.org/CreativeWork">';
  
     // print object name
     $object_name = urldecode($turn_object->name); 
     if ($object_name != 'None') { // Many Powerhouse objects don't have names  
-       $object_print_string = '<h2 class="objectname"><a name="object">'.urldecode($turn_object->name).'</a></h2>';
+       $object_print_string = '<h2 class="objectname" itemprop="name"><a name="object">'.urldecode($turn_object->name).'</a></h2>';
     } else {
       // use the description instead
       $object_print_string = '<h2 class="noobjectname"><a name="object">[untitled]</a></h2>';
-      $object_print_string .= '<p class="objectdescription">'.$object_description.'</p>';
+      $object_print_string .= '<p class="objectdescription" itemprop="description">'.$object_description.'</p>';
     }
     
     // ### add test for date and place not being null and add commas appropriately
@@ -68,7 +75,7 @@ function printObject() {
 
     $object_print_string .= '<p class="source">';
     if ($source_display_url != '') {
-      $object_print_string .= 'View <a href="'.$source_display_url.'" target="_blank">object on the '.$institution.' site</a> (opens in new window).';
+      $object_print_string .= 'View <a href="'.$source_display_url.'" target="_blank" itemprop="sameAs">object on the '.$institution.' site</a> (opens in new window).';
     } else {
       $object_print_string .= 'Object from: '.$institution.'.';
     }
@@ -77,7 +84,7 @@ function printObject() {
     $object_print_string .= '<p class="tombstone">';
     
     if ($interpretative_date != '') {
-      $object_print_string .= 'Date: '. $interpretative_date . '&nbsp;&nbsp;';
+      $object_print_string .= '<span itemprop="dateCreated">Date: '. $interpretative_date . '</span>&nbsp;&nbsp;';
     }
     if ($interpretative_place != '') {
       $object_print_string .= 'Place: '. $interpretative_place . '&nbsp;&nbsp;';
@@ -89,17 +96,20 @@ function printObject() {
     if ($institution == 'Powerhouse Museum') {
       $image_url = str_replace("/thumbs/", "/TLF_mediums/", $image_url);
     } 
-    $object_print_string .= '<img class="object_image" src="'. $image_url .'" />';
+    $object_print_string .= '<img class="object_image" itemprop="image" src="'. $image_url .'" />';
     // add licence terms for Powerhouse
     if ($institution == 'Powerhouse Museum') {
       $object_print_string .= '<div class="object_image_credit">Thumbnails under license from Powerhouse Museum.</div>';
     } 
   
   } else {
-    $object_print_string .= "<p>Whoops, that didn't work.  We can't find the object you're looking for - try refreshing the page. "; // different messages for specific obj sought but not found?
+    $object_print_string .= "<p>Whoops, that didn't work.  We can't find the object you're looking for - try refreshing the page. "; // different messages for specific objects sought but not found?
     printRefresh($object_id);
     $object_print_string .= "</p>";
   }   
+
+	// end schema.org div
+    $object_print_string .= "</div>";
   
   return array ($turn_object->object_id, $object_print_string);
 
