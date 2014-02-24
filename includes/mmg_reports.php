@@ -2,14 +2,7 @@
 /**
  * Functions for reporting levels of activity and content generated
  * 
- * Copyright (C) 2013 Mia Ridge
- * 
- * @since 0.2
- * 
- */
-
-/**
- * 
+ * Copyright (C) 2014 Mia Ridge
  * 
  * @since 0.2
  * 
@@ -29,7 +22,7 @@ function mmgSiteStats() {
   
 }
 
-// for any object ID (internal ID at first then maybe accession number...)
+// for any object ID 
 /*
  * Uses obj_ID param as added for obj bookmark
  */
