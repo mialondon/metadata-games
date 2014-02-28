@@ -111,9 +111,9 @@ function mmgPrintUGCFacts($object_id) {
   
   // get facts
   $factssql = "SELECT ". table_prefix."turns.*, ". table_prefix."turn_facts.fact_headline, ". table_prefix."turn_facts.fact_summary, ". table_prefix."turn_facts.fact_source FROM ". table_prefix."turns JOIN ". table_prefix."turn_facts ";
-  $factssql .= " WHERE ". table_prefix."turns.turn_id = ". table_prefix."turn_facts.turn_id AND ". table_prefix."turns.object_id = '".%d."' ";
+  $factssql .= " WHERE ". table_prefix."turns.turn_id = ". table_prefix."turn_facts.turn_id AND ". table_prefix."turns.object_id = %d";
   //echo $factssql;
-  $factresults = $wpdb->get_results($wpdb->prepare($factssql), $object_id); 
+  $factresults = $wpdb->get_results($wpdb->prepare($factssql, $object_id)); 
   // print facts
   if($factresults) { // is array, not object
     foreach ($factresults as $factresult) {
@@ -134,9 +134,9 @@ function mmgPrintUGCTags($object_id) {
   
   // get tags
   $tagssql = "SELECT ". table_prefix."turns.*, ". table_prefix."turn_tags.tag FROM ". table_prefix."turns JOIN ". table_prefix."turn_tags ";
-  $tagssql .= " WHERE ". table_prefix."turns.turn_id = ". table_prefix."turn_tags.turn_id AND ". table_prefix."turns.object_id = '".%s."' ";
+  $tagssql .= " WHERE ". table_prefix."turns.turn_id = ". table_prefix."turn_tags.turn_id AND ". table_prefix."turns.object_id = %d";
   //echo $tagssql;
-  $tagresults = $wpdb->get_results($wpdb->prepare($tagssql), $object_id); 
+  $tagresults = $wpdb->get_results($wpdb->prepare($tagssql, $object_id)); 
   if($tagresults) { // is array, not object  
     foreach ($tagresults as $tagresult) {
       $tag_string .= ' ' . stripslashes($tagresult->tag) . ', ';
