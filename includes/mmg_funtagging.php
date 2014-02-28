@@ -96,8 +96,8 @@ function mmgGetTurnCount() {
   global $wpdb;
   
   // get how many turns they've had in this session for feedback
-  $sql = "SELECT count(session_id) as num_turns FROM " . table_prefix . "turns WHERE session_id = '". ($_COOKIE['PHPSESSID']) ."' AND game_code = 'funtagging'"; 
-  $results = $wpdb->get_row ($wpdb->prepare ($sql)); // ###update this
+  $sql = "SELECT count(session_id) as num_turns FROM " . table_prefix . "turns WHERE session_id = '%s' AND game_code = 'funtagging'"; 
+  $results = $wpdb->get_row ($wpdb->prepare ($sql, ($_COOKIE['PHPSESSID']))); // ###update this
   
   if (is_object($results)) {
     $count = $results->num_turns;
@@ -198,8 +198,8 @@ function mmgGetDoraTurnMessages($score) {
 function mmgGetDoraTurnValidation($object_id, $turn_id) {
   global $wpdb;
 
-  $sql = "SELECT turn_id, tag, count(tag) as numTags FROM ". table_prefix. "turn_tags ". table_prefix. "objects WHERE object_id = '". $object_id ."' AND turn_id != '". $turn_id ."' GROUP BY tag ORDER BY numTags DESC"; // get number of times a tag was used too
-  $results = $wpdb->get_results($wpdb->prepare ($sql)); // ### update this
+  $sql = "SELECT turn_id, tag, count(tag) as numTags FROM ". table_prefix. "turn_tags ". table_prefix. "objects WHERE object_id = %d AND turn_id != %d GROUP BY tag ORDER BY numTags DESC"; // get number of times a tag was used too
+  $results = $wpdb->get_results($wpdb->prepare ($sql, $object_id, $turn_id)); // ### update this
   
   if ($results) { // have specific UGC for that object
     $message = 'Other people added these tags for the same object (the number of times is in brackets): ';
