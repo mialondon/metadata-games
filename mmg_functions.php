@@ -59,10 +59,10 @@ function printObject() {
     // print object name
     $object_name = urldecode($turn_object->name); 
     if ($object_name != 'None') { // Many Powerhouse objects don't have names  
-       $object_print_string = '<h2 class="objectname" itemprop="name"><a name="object">'.urldecode($turn_object->name).'</a></h2>';
+       $object_print_string .= '<h2 class="objectname" itemprop="name"><a name="object">'.urldecode($turn_object->name).'</a></h2>';
     } else {
       // use the description instead
-      $object_print_string = '<h2 class="noobjectname"><a name="object">[untitled]</a></h2>';
+      $object_print_string .= '<h2 class="noobjectname"><a name="object">[untitled]</a></h2>';
       $object_print_string .= '<p class="objectdescription" itemprop="description">'.$object_description.'</p>';
     }
     
