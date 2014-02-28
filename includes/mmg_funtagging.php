@@ -56,7 +56,7 @@ function funtagging() {
 
 
 /**
- * Prints the form for the 'add tags' activity - funtagging version ###
+ * Prints the form for the 'add tags' activity - funtagging ('Dora') version 
  * @since 0.1
  * 
  */
@@ -96,8 +96,8 @@ function mmgGetTurnCount() {
   global $wpdb;
   
   // get how many turns they've had in this session for feedback
-  $sql = "SELECT count(session_id) as num_turns FROM " . table_prefix . "turns WHERE session_id = '". ($_COOKIE['PHPSESSID']) ."' AND game_code = 'funtagging'"; 
-  $results = $wpdb->get_row ($wpdb->prepare ($sql)); // ###update this
+  $sql = "SELECT count(session_id) as num_turns FROM " . table_prefix . "turns WHERE session_id = '%s' AND game_code = 'funtagging'"; 
+  $results = $wpdb->get_row ($wpdb->prepare ($sql, ($_COOKIE['PHPSESSID']))); 
   
   if (is_object($results)) {
     $count = $results->num_turns;
@@ -198,8 +198,8 @@ function mmgGetDoraTurnMessages($score) {
 function mmgGetDoraTurnValidation($object_id, $turn_id) {
   global $wpdb;
 
-  $sql = "SELECT turn_id, tag, count(tag) as numTags FROM ". table_prefix. "turn_tags ". table_prefix. "objects WHERE object_id = '". $object_id ."' AND turn_id != '". $turn_id ."' GROUP BY tag ORDER BY numTags DESC"; // get number of times a tag was used too
-  $results = $wpdb->get_results($wpdb->prepare ($sql)); // ### update this
+  $sql = "SELECT turn_id, tag, count(tag) as numTags FROM ". table_prefix. "turn_tags ". table_prefix. "objects WHERE object_id = %d AND turn_id != %d GROUP BY tag ORDER BY numTags DESC"; // get number of times a tag was used too
+  $results = $wpdb->get_results($wpdb->prepare ($sql, $object_id, $turn_id)); 
   
   if ($results) { // have specific UGC for that object
     $message = 'Other people added these tags for the same object (the number of times is in brackets): ';
@@ -222,8 +222,7 @@ function mmgGetDoraTurnValidation($object_id, $turn_id) {
   return $message;
 }
 /*
- * Gets the average number of tags per object across the site for the tagging game Dora/funtagging
- * ### needs avg figure to be rounded down!
+ * Gets the average number of tags (rounded up) per object across the site for the tagging game Dora/funtagging
  * @uses wpdb;
  */
 function mmgGetSiteTaggingAverages() { 
@@ -233,12 +232,10 @@ function mmgGetSiteTaggingAverages() {
   $sqlTurns = "select count(turn_id) as numTurns from ". table_prefix. "turns WHERE game_code = 'funtagging'"; 
   $sqlTags = "select count(tag) as numTags from ". table_prefix. "turn_tags"; 
   $resultTurns = $wpdb->get_var($sqlTurns);
- // $resultTurns = $wpdb->get_var($wpdb->prepare ($sqlTurns));
   $resultsTags = $wpdb->get_var($sqlTags);  
- // $resultsTags = $wpdb->get_var($wpdb->prepare ($sqlTags));
   $site_average = $resultsTags / $resultTurns;
   
-  $site_average = round($site_average, 1);
+  $site_average = round($site_average, 0, PHP_ROUND_HALF_UP);
   
   return $site_average;
 }
@@ -282,10 +279,11 @@ function mmgDoraGameMarker() {
     if ($game_results) {
       $numTags = $game_results;
       $player_average_tags = $numTags/5;
+      $player_average_tags = round($player_average_tags, 0, PHP_ROUND_HALF_UP);
       //$img_src .= 'Dora_happy.gif"'; // wow!
       $game_score = TAGSCORE * $numTags;
       $message .= '<p class="game_congrats">You scored a grand total of ' . $game_score . ' points for this level. ';
-      $message .= ' On average, you added ' . $player_average_tags . ' tags for each object. You can check out the content you\'ve added by clicking on objects in your display case on the right.';
+      $message .= ' On average, you added ' . $player_average_tags . ' tags per object. You can check out the content you\'ve added by clicking on objects in your display case on the right.';
       
       mmgSaveGameScore($game_score, 'funtagging'); // store their game points
     }
@@ -340,7 +338,7 @@ function mmgSaveGameScore($game_score, $game_code) {
   if(is_user_logged_in()) {
     get_currentuserinfo();
     $wp_username = $current_user->user_login; 
-  } // will need to go back and update previous turns with login if they sign up ###
+  } // will need to go back and update previous turns with login if they sign up - this may already be in, test ###
   
   $wpdb->query( $wpdb->prepare( "
   INSERT INTO ". table_prefix."game_scores 
