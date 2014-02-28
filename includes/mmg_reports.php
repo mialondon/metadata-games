@@ -55,7 +55,7 @@ function mmgListObjectUGC() {
       $tag_string = mmgPrintUGCTags($obj_id);
       if (!empty($tag_string)) {
         $message .= $tag_string;
-      } else { // 'no tags yet, why not add some'? ###
+      } else { // 'no tags yet, why not add some'? 
         $message .= 'No tags yet. Why not <a href="' . PATH_TO_DORA_PAGE . '?obj_ID='.$obj_id.'" title="Help Dora with this object" target="_blank">help Dora by adding some?</a>';
       }
       
@@ -66,7 +66,7 @@ function mmgListObjectUGC() {
       $fact_string = mmgPrintUGCFacts($obj_id);
       if (!empty($fact_string)) {
         $message .= $fact_string;
-      } else {// 'no facts yet, why not add some'? ###
+      } else {// 'no facts yet, why not add some'? 
         $message .= '<h3>Facts</h3><p>No facts yet. Why not <a href="' . PATH_TO_DONALD_PAGE . '?obj_ID='.$obj_id.'" title="find an interesting fact about this object" target="_blank">take the fact challenge with this object?</a></p>';
       }      
       $message .= '</div>';

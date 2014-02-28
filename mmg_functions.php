@@ -27,8 +27,7 @@ Copyright (C) 2013 Mia Ridge
  */
 function printObject() {
 
-  //$temp_object_id = checkForParams(); // check to see if an object ID has been supplied
-  list($temp_object_id, $skipped_ID) = checkForParams();
+  list($temp_object_id, $skipped_ID) = checkForParams(); // check to see if an object ID has been supplied
   
   // do the check here for whether they've skipped an object
   if (!empty($skipped_ID)) { 
@@ -117,7 +116,7 @@ function printObject() {
  
 
 function printObjectBookmark($object_id) {
-  //$temp_object_id = checkForParams();
+
   list($temp_object_id, $skipped_ID) = checkForParams();  
   
     echo '<p class="saveurl">Tip: save this URL if you want more time to think or research: ';
@@ -136,7 +135,6 @@ function printObjectBookmark($object_id) {
 function checkForParams() {
   global $wp_query;
   if (isset($wp_query->query_vars['obj_ID'])) {
-    // sanitise the input ###
     $obj_id = $wp_query->query_vars['obj_ID'];
     //return $obj_id;
   } else {
@@ -144,7 +142,6 @@ function checkForParams() {
   }
   
   if (isset($wp_query->query_vars['skipped_ID'])) {
-    // sanitise the input ###
     $skipped_ID = $wp_query->query_vars['skipped_ID'];
     //return $skipped_ID;
   } else {
@@ -170,7 +167,6 @@ function printRefresh($temp_object_id) {
  * get the page url (hopefully with params) to print for people to come back later
  * From http://www.webcheatsheet.com/php/get_current_page_url.php
  * Use e.g. echo curPageURL();
- * ### Is this still used?
  */
 function curPageURL() {
  $pageURL = 'http';
@@ -186,9 +182,10 @@ function curPageURL() {
 
 /*
  * quite possibly a mess and not used yet
+ * This seemed to assume many more games would be added and that people would want to play a random game
  */
 function mmgGetRandomGamePage() {
-  //$pages = &get_pages(); // get only game pages ###
+  //$pages = &get_pages(); // get only game pages 
   //$pageInd = rand(0, count($pages) - 1);
   //echo $pages[$pageInd]->post_content;
         $pages = get_pages();
@@ -346,8 +343,8 @@ function saveTurn($game_code) {
 
   if(is_user_logged_in()) {
     get_currentuserinfo();
-    $wp_username = $current_user->user_login; // could also use display name but KISS for now
-  } // will need to go back and update previous turns with login if they sign up ###
+    $wp_username = $current_user->user_login; // could also use display name but KISS for now as getting the username you want is easy
+  } 
   
   $wpdb->query( $wpdb->prepare( "
   INSERT INTO ". table_prefix."turns 
