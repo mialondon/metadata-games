@@ -8,7 +8,7 @@
 */
 
 /*
-Copyright (C) 2013 Mia Ridge
+Copyright (C) 2014 Mia Ridge
 */
 
 /**
@@ -69,7 +69,7 @@ function printObject() {
 
     # if it's a British Library Commons image, include a description for further context
     if ($institution = 'British Library on Flickr Commons') {
-      $object_print_string .= '<p class="objectdescription">'.$object_description.'</p>';
+      $object_print_string .= '<p class="objectdescription" itemprop="description">'.$object_description.'</p>';
     }
 
     $object_print_string .= '<p class="source">';
@@ -83,7 +83,11 @@ function printObject() {
     $object_print_string .= '<p class="tombstone">';
     
     if ($interpretative_date != '') {
-      $object_print_string .= '<span itemprop="dateCreated">Date: '. $interpretative_date . '</span>&nbsp;&nbsp;';
+      $object_print_string .= '<span itemprop="dateCreated"';
+      if ($institution == 'British Library on Flickr Commons') { // mixing in schema.org/Book stuff
+        $object_print_string .= ' itemprop="datePublished"  content="'.$interpretative_date.'"';
+      } 
+      $object_print_string .= '>Date: '. $interpretative_date . '</span>&nbsp;&nbsp;';
     }
     if ($interpretative_place != '') {
       $object_print_string .= 'Place: '. $interpretative_place . '&nbsp;&nbsp;';
