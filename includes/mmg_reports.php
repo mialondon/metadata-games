@@ -39,7 +39,7 @@ function mmgListObjectUGC() {
     list($object_id, $object_print_string) = printObject();
     echo $object_print_string;
   
-    // get UGC
+    // get UGC turns
     $results = $wpdb->get_results($wpdb->prepare("SELECT * FROM ". table_prefix."turns WHERE object_id = '%d' ORDER BY game_code", $obj_id));
 
     if($results) { // is array, not object
@@ -79,7 +79,8 @@ function mmgListObjectUGC() {
     }
 
     
-  } elseif(isset($wp_query->query_vars['report'])) {
+  } // if no object ID as parameter, then list all the objects with UGC
+  elseif(isset($wp_query->query_vars['report'])) {
     $report_type = $wp_query->query_vars['report'];
     if($report_type == 'facts') {
       $sql = "SELECT count( object_id ) AS numUGC, object_id FROM ". table_prefix."turns WHERE game_code = 'factseeker' GROUP BY object_id ORDER BY numUGC DESC";
@@ -97,6 +98,7 @@ function mmgListObjectUGC() {
     $sql = "SELECT count( object_id ) AS numUGC, object_id FROM ". table_prefix."turns GROUP BY object_id ORDER BY numUGC DESC";
     $results = $wpdb->get_results($sql);
     
+	// write out the list
     foreach ($results as $result) {
       echo '<p><a href="?obj_ID='.$result->object_id.'">'.$result->object_id.'</a> has '.$result->numUGC .' tags or facts</p>';
     }

@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: mmg
-Plugin URI: http://www.museumgames.org.uk/
+Plugin URI: http://www.museumgam.es
 Description: mmg is a plugin for a set of metadata games based around museum collections (games that help improve digitised museum collections) 
-Version: 0.3.1
+Version: 0.3.2
 Author: Mia Ridge
-Author URI: http://openobjects.org.uk
+Author URI: http://miaridge.com
 License: GPL2
 
 */
