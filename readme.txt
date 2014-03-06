@@ -12,15 +12,11 @@ Beyond alpha version of a plugin for a museum collection-based game.
 mmg is a WordPress plugin for a set of metadata games based around museum collections. 
 Not included (for now) is the museumobjectsimport script that is used to get data into the matchy_objects table for use in the game.  Data is sourced from the collections of the UK's Science Museum, Sydney's Powerhouse Museum and the British Library.
 
-Plugins used in the old (2011) version with WordPress 3.0 were:
-contact-form-7/wp-contact-form-7.php 
-cubepoints/cubepoints.php 
-google-analyticator/google-analyticator.php 
-mmg/mmg.php 
-session-manager/session_manager.php 
-share-and-follow/share-and-follow.php 
-wp-db-backup/wp-db-backup.php 
+Plugins currently used in the game code are:
+CubePoints (for player scores)
+Session Manager (for session cookies)
 
-Theme was: Thematic with a child theme
+Theme is Titanic Thematic Child Theme for responsive theme goodness.
+Pages also use the plugin Sidebar Login (replaces Theme My Login, allows account creation from the sidebar)
 
-This list needs to be updated after re-development with whatever plugins and themes are still used.
+I'm also using Akismet, Google Analyticator, W3 Total Cache, WordPress Database Backup and Error Log Monitor (for quick checking when I'm away from my dev set-up).
