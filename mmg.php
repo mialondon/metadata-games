@@ -1,18 +1,18 @@
 <?php
 /*
 Plugin Name: mmg
-Plugin URI: http://www.museumgames.org.uk/
+Plugin URI: http://www.museumgam.es/
 Description: mmg is a plugin for a set of metadata games based around museum collections (games that help improve digitised museum collections) 
-Version: 0.3.1
+Version: 0.3.2
 Author: Mia Ridge
 Author URI: http://openobjects.org.uk
 License: GPL2
-
 */
-/* This version is based on backup from MSc dissertation c Dec 2010 */
+
+/* This version is based on backup from MSc dissertation c Dec 2010 - i.e. most of the code is old and rushed. Try not to judge too harshly! */
 
 /*
-Copyright (C) 2013 Mia Ridge
+Copyright (C) 2014 Mia Ridge
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -30,7 +30,7 @@ Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 
 */
 
-// ### Add as plugin config setting so it's generalisable. Also db name, not just table names
+// ### Add as plugin config setting so it's generalisable. Also db name, not just table names @todo
 if ($_SERVER['HTTP_HOST'] == 'localhost' || $_SERVER['HTTP_HOST'] == 'www.museumgames.org.uk' || $_SERVER['HTTP_HOST'] == 'museumgames.org.uk') {
   define("table_prefix", "wp_mmg_");
 } elseif ($_SERVER['HTTP_HOST'] == 'www.museumgam.es' || $_SERVER['HTTP_HOST'] == 'museumgam.es')  {
@@ -44,22 +44,17 @@ require_once(dirname(__FILE__) . "/includes/mmg_funtagging.php");
 require_once(dirname(__FILE__) . "/includes/mmg_factseeker.php");
 //require_once(dirname(__FILE__) . "/includes/mmg_taghero.php"); // add it back later or refactor dependencies
 require_once(dirname(__FILE__) . "/includes/mmg_reports.php");
-require_once(dirname(__FILE__) . "/includes/mmg_widgets.php");
+//require_once(dirname(__FILE__) . "/includes/mmg_widgets.php"); Not using this anymore @since 0.3.2
 
 // these should really be made into config options ### @todo
 define('MMG_IMAGE_URL',  WP_CONTENT_URL.'/plugins/'. basename(dirname(__FILE__)) . '/includes/images/');
 define('MMG_PLUGIN_URL',  WP_PLUGIN_URL.'/includes/'. basename(dirname(__FILE__)));
-define("FACTSCORE", "250");
-define("TAGSCORE", "5");
+define("FACTSCORE", "250"); // how many points do players get for a fact added?
+define("TAGSCORE", "5"); // how many points do players get per tagged added?
 define("PATH_TO_TAGHERO_PAGE", WP_CONTENT_URL. "/taghero/"); // path to page with Tag Hero game shortcode, from WordPress root
 define("PATH_TO_DONALD_PAGE", WP_CONTENT_URL. "/donald/"); // path to page with Donald game shortcode, from WordPress root
 define("PATH_TO_DORA_PAGE", WP_CONTENT_URL. "/dora/"); // path to page with Donald game shortcode, from WordPress root
 define("PATH_TO_UGCREPORTS_PAGE", WP_CONTENT_URL. "/content-added-so-far/"); // path to page with Donald game shortcode, from WordPress root
-
-/* for live */
-// define("PATH_TO_DONALD_PAGE", "/donald/"); // path to page with Donald game shortcode, from WordPress root
-// define("PATH_TO_DORA_PAGE", "/dora/"); // path to page with Donald game shortcode, from WordPress root
-// define("PATH_TO_UGCREPORTS_PAGE", "/content-added-so-far/"); // path to page with Donald game shortcode, from WordPress root
 
 
 /////////// set up activation and deactivation stuff
@@ -72,38 +67,7 @@ function mmg_install() {
     deactivate_plugins(basename(__FILE__)); // deactivate plugin
     wp_die("This plugin requires WordPress Version 3 or higher.");  
   } else {
-    // go ahead and set up the custom tables needed
-    /* to do
-     * http://abhirama.wordpress.com/2010/06/07/wordpress-plugin-and-widget-tutorial/
-     * has a good setup script, at first glance
-
-     * outside the script:
-     * global $my_plugin_table;
-global $my_plugin_db_version;
-global $wpdb;
-$my_plugin_table = $wpdb->prefix . 'my_plugin';
-$my_plugin_version = '1.0';
-     * 
-     * inside the function
-     *   global $wpdb;
-  global $my_plugin_table;
-  global $my_plugin_db_version;
-
-  if ( $wpdb->get_var( "show tables like '$my_plugin_table'" ) != $my_plugin_table ) {
-    $sql = "CREATE TABLE $my_plugin_table (".
-       "id int NOT NULL AUTO_INCREMENT, ".
-       "user_text text NOT NULL, ".
-       "UNIQUE KEY id (id) ".
-       ")";
-
-    require_once( ABSPATH . 'wp-admin/includes/upgrade.php' );
-    dbDelta( $sql );
-
-    add_option( "my_plugin_db_version", $my_plugin_db_version );
-  }
-     * 
-     * 
-     */ 
+    // this should set up the custom tables and views needed for the plugin @todo
  }
 }
 
@@ -111,15 +75,13 @@ $my_plugin_version = '1.0';
 register_deactivation_hook(__FILE__,'mmg_uninstall');
 
 function mmg_uninstall() {
-  // do stuff
-  // maybe call export thingy too?  
-  // presumably delete settings from db?
+  // ## @todo
+  // offer option to export data first 
 }
 
 
 function mmg_export_data() {
-  // let users export data generated through game play for use on collections etc
-  // is this the same as backing up data?
+  // would double up as a backup function ### @todo
 }
 
 /////////// set up option storing stuff
@@ -140,16 +102,14 @@ update_option('mmg_plugin_options',$mmg_options_arr);
 //$mmg_option_game_length = $mmg_options_arr["mmg_option_game_length"];
 // end option array setup
 
-/* menu/options stuff
- * 
- * To Do - add option for table name with object data?
+/* 
+ * Adds a page for 'MMG settings' as submenu under general WordPress Setings menu
+ * @todo - add option for table name with object data?
  * 
  */
-// required in WP 3 but not earlier?
 add_action('admin_menu', 'mmg_plugin_menu');
 
-/////////// set up stuff for admin options pages
-// add submenu item to existing WP menu
+// @todo - change menu option name so it's clearer to casual user?
 function mmg_plugin_menu() {
 add_options_page('MMG settings page', 'MMG settings', 'administrator', __FILE__, 'mmg_settings_page');
 }
@@ -183,6 +143,7 @@ function mmg_settings_page() {
 }
 
 // get options from array and display as fields
+// @todo update this for other config options
 function mmg_setting_game_length() {
   // load options array
   $mmg_options = get_option('mmg_settings_values');
@@ -194,10 +155,10 @@ function mmg_setting_game_length() {
   value="'.esc_attr($game_length).'" />';
 }
 
-/////////// set up shortcode
-// Sample: [mmgame gametype=simpletagging]
 /*
  *
+ * Sets up the shortcodes that are added to page content to invoke the game.
+ * e.g. [mmgame gametype=simpletagging]
  * Not sure if I should include mmgSaveNewUserPoints() here but as it's called each time there's
  * a shortcode (ie we're on a game page), maybe it's the best place for it
  * 
@@ -208,7 +169,8 @@ function gameShortCode($atts, $content=null) {
       include_once(ABSPATH.'/wp-content/plugins/mmg/mmg_functions.php'); 
   }
   
-  // testing this here
+  // Checks to see if the user has created an account and/or logged in since they started playing
+  // Adds their (new) username to their previous turns if so ### check
   if ( is_user_logged_in() ) {
     mmgSaveNewUserPoints();
   }
@@ -220,9 +182,8 @@ function gameShortCode($atts, $content=null) {
     simpleFacts();
   } elseif ($gametype == 'funtagging') {
     funtagging();
-  } elseif ($gametype == 'factseeker') { // Dec 14 - using mmgFactseekerChoice until have versions on shortcodes
+  } elseif ($gametype == 'factseeker') { 
     mmgFactseekerChoice();
-    // factseeker();
   } elseif ($gametype == 'objectugcreport') {
     mmgListObjectUGC(); 
   } elseif ($gametype == 'taghero') {
@@ -232,7 +193,7 @@ function gameShortCode($atts, $content=null) {
     simpleTagging();
   }
   
-  $GLOBALS['my_game_code'] = $gametype; // so it's accessible in the widget
+  $GLOBALS['my_game_code'] = $gametype; // so it's accessible in the widget @todo check for deprecation re globals
 
 }
 
@@ -268,8 +229,11 @@ function parameter_reporttype($oVars) {
 }
 add_filter('query_vars', 'parameter_reporttype');
 
-/* game ID for Tag Hero players */
-/* gameID is the unique ID for a particular game setup based on session ID from originating player */
+/* 
+* game ID for Tag Hero players 
+* gameID is the unique ID for a particular game setup based on session ID from originating player
+* @todo refactor this as tag heros is hackday stuff that shouldn't be here
+*/
 function parameter_gamesessionID($oVars) {
     $oVars[] = "gamesession_ID"; 
     return $oVars;
@@ -300,12 +264,16 @@ function parameter_tag_score($oVars) {
 add_filter('query_vars', 'parameter_tag_score');
 /* end Tag Hero-specific stuff */
 
-
-// add widget, trying smashing book method this time
-class mmgHello extends WP_Widget {
+/*
+ * Widget mmgPlayerObjects draws the 'completion box' of played objects and site stats
+ * Previously called mmgHello
+ *
+ * @see drawCompletionBox
+ */
+class mmgPlayerObjects extends WP_Widget {
   
-  function mmgHello() {
-  parent::WP_Widget(false, $name = 'mmg Hello');
+  function mmgPlayerObjects() {
+  parent::WP_Widget(false, $name = 'mmg Player Objects');
   }
   
   function widget($args, $instance) {
@@ -318,8 +286,6 @@ class mmgHello extends WP_Widget {
                         <?php if (!empty ($GLOBALS['my_game_code'])) {
                          drawCompletionBox($GLOBALS['my_game_code']);
                         }
-                        // experiment
-                        //mmgGetRandomGamePage(); // ###
                         ?>
     <?php echo $after_widget; ?>
   <?php
@@ -328,29 +294,20 @@ class mmgHello extends WP_Widget {
   function update($new_instance, $old_instance) {
   return $new_instance;
   }
-  
-  // use something like this to trap for nasties on the way into the update function
-  // $instance['music'] = strip_tags( $new_instance['music'] );
-  
-/* Users can't set the title, so commenting this out for now.
-   function form($instance) {
-  $title = esc_attr($instance['title']);
-  ?>
-          <p>
-            <label for="<?php echo $this->get_field_id('title'); ?>">Title: <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" /></label>
-          </p>
-  <?php
-  } */
+
 }
 
-add_action('widgets_init', create_function('', 'return register_widget("mmgHello");'));
+add_action('widgets_init', create_function('', 'return register_widget("mmgPlayerObjects");'));
+// Final part for registering the mmgPlayerObjects widget
+
 
 /*
  * Adding login widget
  * To Do: change header message depending on whether user is logged in
  * Picks up some of the things that Theme My Login doesn't do, like showing profile and logout link
+ * @deprecated 3.0.2 Use Sidebar Login's built in widget instead
  *
-*/
+
 class mmgLoginWidget extends WP_Widget {
   
   function mmgLoginWidget() {
@@ -383,7 +340,7 @@ class mmgLoginWidget extends WP_Widget {
 }
 
 add_action('widgets_init', create_function('', 'return register_widget("mmgLoginWidget");'));
-
+*/
 
 /*
  * Displays user scores by game, even if they're not registeret yet
