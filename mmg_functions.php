@@ -8,7 +8,7 @@
 */
 
 /*
-Copyright (C) 2013 Mia Ridge
+Copyright (C) 2014 Mia Ridge
 */
 
 /**
@@ -270,11 +270,10 @@ function mmgGetObject($obj_id = null) {
     //echo 'in object not shown before exists'; // +++
   } else { // get object that has been shown before
     $random_row_sql = "SELECT $column FROM ". table_prefix."objects_shown ";
-      if (!empty($exclude_ids)) { // is this the right test?  If has no data ###
+      if (!empty($exclude_ids)) { // @todo is 'has no data' the right test? 
         $random_row_sql .=" WHERE object_id NOT IN (".$exclude_ids .") ";
       }
       $random_row_sql .= "ORDER BY show_count ASC, RAND(NOW()) LIMIT 1";
-      // echo '<h1>from $random_row_sql in objects shown before : '. $random_row_sql . '</h1>'; // +++
       $random_row = $wpdb->get_row ($random_row_sql); 
       if ($random_row) {
         $random_row_id = $random_row->object_id;
@@ -313,7 +312,6 @@ function mmgGetObject($obj_id = null) {
       array($random_row_id, 1) ) ); 
     }
   } else {
-    //echo '<h1>Something went wrong, or you\'ve seen all the objects!  Use the contact form to request more objects or report this error - you might even get a special award for your achievements.</h1>';
     echo '<h1>Whoops! Something went wrong, please let me know by tweeting @mia_out or emailing me via the contact page. Terribly sorry about that!</h1>'; // general emergency text, assuming reloading works    
   }
 
@@ -402,9 +400,11 @@ function mmgSQLObjectsByUser($game_code) {
   
 }
 
-/**
- * Take the object id, get the thumbnail, add it to the next free spot in the completion box
- * 
+/*
+ * Draw 'completion box' which shows people the objects they've played and overall contribution count
+ * Displays rows of empty thumbnail boxes and fills them with object thumbnail, link to UGC page
+ *
+ * @param $game_code
  * @since 0.3
  * @uses $wpdb
  * 
@@ -471,7 +471,7 @@ function drawCompletionBox($game_code) {
 
   echo '</tr></table>';
   
-  // aww, a nice message
+  // aww, a nice message about how useful player contributions are
   mmgSiteStats();
 }
 
@@ -512,7 +512,8 @@ function saveTags($turn_id) {
 }
 
 /**
- * Save facts.
+ * Save facts without adding any score
+ * Designed as a comparison activity for the game-based version
  * 
  * @since 0.1
  * @uses $wpdb
@@ -521,15 +522,13 @@ function saveTags($turn_id) {
 function saveFact($turn_id) {
     // do stuff
   global $wpdb;
-//  global $my_plugin_table; // ### should set this up
     
-  //$tags = $_POST['tags']; // Not needed!
   $object_id = $_POST['object_id'];
   $fact_headline = $_POST['fact_headline'];
   $fact_summary = $_POST['fact_summary'];
   $fact_source = $_POST['fact_source']; 
   
-  echo '<p class="turn_results">You added fact: '.$_POST['fact_summary'].'</p>';
+  //echo '<p class="turn_results">You added fact: '.$_POST['fact_summary'].'</p>';
   
     $wpdb->query( $wpdb->prepare( "
     INSERT INTO ". table_prefix."turn_facts 
@@ -569,8 +568,7 @@ function saveFactWithScores($turn_id) {
   $wpdb->query( $wpdb->prepare( "
   UPDATE ". table_prefix."turns
   SET turn_score = %d 
-  WHERE turn_id = %d" . $turn_id . " "
-  ), FACTSCORE, $turn_id );   
+  WHERE turn_id = %d", FACTSCORE, $turn_id ));   
     
     cp_alterPoints( cp_currentUser(), FACTSCORE); 
      
