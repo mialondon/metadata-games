@@ -1,11 +1,11 @@
 <?php
 /**
- * Functions for the first go at a proper game - 'funtagging'
+ * Functions for the 'funtagging' game 'Dora' 
  * 
  * Prints the containing div, calls functions necessary to print the object 
- * and forms to the screen
+ * and input forms to the screen
  *  
- * Copyright (C) 2013 Mia Ridge
+ * Copyright (C) 2014 Mia Ridge
  * 
  * @since 0.2
  * 
@@ -57,6 +57,8 @@ function funtagging() {
 
 /**
  * Prints the form for the 'add tags' activity - funtagging ('Dora') version 
+ * 
+ * @param $object_id
  * @since 0.1
  * 
  */
@@ -110,7 +112,9 @@ function mmgGetTurnCount() {
 
 /*
  * Builds up the string of Dora's messages in response to a turn
- * Takes in $score, $num_turns - $score is compulsory, $num_turns might be empty
+ * 
+ * @param $score
+ * @see mmgGetTurnCount
  * @uses $wpdb;
  */
 function mmgGetDoraTurnMessages($score) {
@@ -124,7 +128,7 @@ function mmgGetDoraTurnMessages($score) {
     if ($num_turns > 5) {
       $message = '<div class="game_completed"><h3 class="game_completed">Hooray! You\'ve completed another level!</h3>'; // win message
     } else {
-      $message = '<div class="game_completed"><h3 class="game_completed">Hooray! You\'ve completed a level!</h3>'; // win message
+      $message = '<div class="game_completed"><h3 class="game_completed">Hooray! You\'ve completed a level!</h3>'; // first time they've tagged five objects
     }
     $game_marker_message = mmgDoraGameMarker();
     if (!empty($game_marker_message)) {
@@ -194,6 +198,11 @@ function mmgGetDoraTurnMessages($score) {
  * Take the object number and checks for other rows in the database about it
  * Uses object ID for comparison and turn_id to exclude their own tags just entered
  *
+ * @param $object_id
+ * @param $turn_id
+ * @see mmgGetSiteTaggingAverages
+ * @uses $wpdb
+ *
  */
 function mmgGetDoraTurnValidation($object_id, $turn_id) {
   global $wpdb;
@@ -221,6 +230,7 @@ function mmgGetDoraTurnValidation($object_id, $turn_id) {
   
   return $message;
 }
+
 /*
  * Gets the average number of tags (rounded up) per object across the site for the tagging game Dora/funtagging
  * @uses wpdb;
@@ -241,11 +251,13 @@ function mmgGetSiteTaggingAverages() {
 }
 
 /* 
- * Handles the 'you've finished a game (five turns) stuff
+ * Handles the 'you've finished a level' (five turns) stuff
  * Summarises how many points they got in that game (ie the last five turns),
  * plus how many tags per object (maybe object thumbnails or just point them to the RHS?)
  * and gives them the site average.
- * Also offers option to tweet or Facebook about it.
+ *
+ * @uses $wpdb
+ * @uses $current_user
  */
 function mmgDoraGameMarker() {
   global $wpdb;
@@ -316,7 +328,7 @@ function mmgDoraGameMarker() {
   $message .= mmgGetShareLinks();
   $message .= '</p>'; */
 
-  $message .= '<span class="play_again"><a href="#object" class="play_link">Play again</a></span>';
+  $message .= '<span class="play_again"><a href="#object" class="play_link">Help describe more objects</a></span>';
   }
   
   return $message;
@@ -338,7 +350,7 @@ function mmgSaveGameScore($game_score, $game_code) {
   if(is_user_logged_in()) {
     get_currentuserinfo();
     $wp_username = $current_user->user_login; 
-  } // will need to go back and update previous turns with login if they sign up - this may already be in, test ###
+  } // will need to go back and update previous turns with login if they sign up - this may already be in @todo
   
   $wpdb->query( $wpdb->prepare( "
   INSERT INTO ". table_prefix."game_scores 

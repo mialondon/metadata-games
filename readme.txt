@@ -16,7 +16,13 @@ Plugins currently used in the game code are:
 CubePoints (for player scores)
 Session Manager (for session cookies)
 
+Plugins used to improve appearance and performance of the site:
+Hide Admin Bar
+Akismet
+Google Analyticator
+W3 Total Cache
+WordPress Database Backup
+Error Log Monitor (for quick checking when I'm away from my dev set-up)
+
 Theme is Titanic Thematic Child Theme for responsive theme goodness.
 Pages also use the plugin Sidebar Login (replaces Theme My Login, allows account creation from the sidebar)
-
-I'm also using Akismet, Google Analyticator, W3 Total Cache, WordPress Database Backup and Error Log Monitor (for quick checking when I'm away from my dev set-up).
