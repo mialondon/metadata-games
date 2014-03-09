@@ -118,27 +118,27 @@ function mmgDonaldThankYou() {
  */
 function printFormFactSeeker($object_id)  {
   $permalink = get_permalink($id); 
-?><div id="tfaContent"><div class="wFormContainer">
+?><div ><div class="wFormContainer">
 				<h3 class="wFormTitle"><span>Mystery object report form</span></h3>
 		<div class="wForm wFormdefaultWidth">
   <form action="<?php echo $permalink ?>" method="post"  id="id2599208" class="labelsAbove hintsSide">
   <input type="hidden" value="<?php echo $object_id ?>" name="object_id" />
-  <fieldset id="tfa_addthedetailsfor" class="wfSection">
+  <fieldset class="wfSection">
   <legend>Add the information you've discovered about this object to your report</legend>
-  <div id="tfa_Headline-D" class="oneField">
-  <label class="preField" for="tfa_Headline" for="fact_headline">Report title</label><br />
-  <input  id="tfa_Headline" type="text" name="fact_headline" class="fact" size="80" maxlength="100" value="" /><br /><span class="field-hint" id="tfa_Headline-H"><span>Our investigators are busy - let them know why they should check out this information.</span></span><br /><br />
+  <div class="oneField">
+  <label class="preField" for="fact_headline">Report title</label><br />
+  <input id="mmgFactHeadline" type="text" name="fact_headline" class="fact" maxlength="100" value="" /><br /><span class="field-hint"><span>Our investigators are busy - let them know why they should check out this information.</span></span><br /><br />
 </div>
 
-<div id="tfa_Factsummary-D" class="oneField">
+<div class="oneField">
   <label class="preField" for="fact_summary">Information discovered</label><br />
-  <textarea name="fact_summary" cols="75" rows="4" id="tfa_Factsummary" class="primaryAction"></textarea>
-<br /><span class="field-hint" id="tfa_Factsummary-H"><span>Summarise your information in your own words (short quotes from your source are ok).</span></span><br /><br />
+  <textarea id="mmgFactSummary" name="fact_summary" rows="4" class="primaryAction"></textarea>
+<br /><span class="field-hint"><span>Summarise your information in your own words (short quotes from your source are ok).</span></span><br /><br />
 </div>
   
-  <div id="tfa_Source-D" class="oneField">
+  <div class="oneField">
   <label class="preField" for="fact_source">Source</label><br />
-  <input id="tfa_Source"  type="text" name="fact_source" class="fact" size="80" maxlength="300" value="" /><br /><span class="field-hint" id="tfa_Source-H"><span>The link, book or person who provided the original evidence.</span></span><br /><br />
+  <input type="text" id="mmgFactSource" name="fact_source" class="fact" maxlength="300" value="" /><br /><span class="field-hint"><span>The link, book or person who provided the original evidence.</span></span><br /><br />
 </div>
 </fieldset>
   
