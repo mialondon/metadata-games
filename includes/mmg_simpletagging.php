@@ -63,7 +63,7 @@ $permalink = get_permalink($id);
   <fieldset>
   <legend>Add words to describe this object</legend>
   <label for="tags">Tags</label>
-  <input type="text" name="tags" class="tags" size="80" maxlength="300" value="" />
+  <input type="text" id="mmgsimpleTagging" name="tags" class="tags" size="80" maxlength="300" value="" />
   <p class="submit"><input class="button" name="submitTags" type="submit" value="Tag!" /></p>
   <p class="hint">Tip: separate each tag with a comma, like this: tag, label, words to describe things, name.</p>
   </fieldset>

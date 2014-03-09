@@ -66,24 +66,21 @@ function printFormFunTag($object_id) {
 $permalink = get_permalink($id); 
 ?>
 <div class="wFormContainer">
-<div class="wForm wFormdefaultWidth">
-  <div id="tfa_tags-D" class="oneField">
+<div class="wForm">
 
   <form action="<?php echo $permalink ?>" method="post">
   <input type="hidden" value="<?php echo $object_id ?>" name="object_id" />
   <fieldset>
   <legend>Add words ('tags') to describe this object</legend>
   <label class="preField" for="tags">Tags</label>
-  <input type="text" name="tags" class="tags" size="60" maxlength="300" value="" /><br />
-   <span class="field-hint" id="tfa_Source-H"><span>Tip: separate each tag with a comma, like this: tag, label, a phrase, name, names.</span></span>
+  <input type="text" id="mmgfunTagging" name="tags" class="tags" maxlength="300" value="" /><br />
+   <span class="field-hint"><span>Tip: separate each tag with a comma, like this: tag, label, a phrase, name, names.</span></span>
   <div class="actions">
   <p class="submit"><input class="button primaryAction" name="submitTags" type="submit" value="Tag!" /></p>
   </div> 
   
   </fieldset>
   </form>
-  
-  </div>
 </div>
 </div>   
   
